@@ -17,6 +17,8 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+			"outputPath": "dist/calculadora-de-notas",
+			"index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
               "zone.js"
@@ -30,8 +32,10 @@
               }
             ],
             "styles": [
-              "src/styles.css"
-            ]
+				"@taiga-ui/core/styles/taiga-ui-theme.less",
+	            "@taiga-ui/core/styles/taiga-ui-fonts.less",
+				"src/styles.css"
+			]
           },
           "configurations": {
             "production": {
