@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators, FormsModule, } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-import { TuiButton, TuiLabel, TuiTextfield, TuiTitle, TuiError } from '@taiga-ui/core';
+import { TuiButton, TuiLabel, TuiTextfield, TuiTitle, TuiError, TuiHint } from '@taiga-ui/core';
 import { TuiInputNumber, TuiRadio, TuiRadioList } from '@taiga-ui/kit';
 import { TuiForm, TuiHeader } from '@taiga-ui/layout';
+
 
 @Component({
 	selector: 'app-calculadora',
@@ -16,13 +17,14 @@ import { TuiForm, TuiHeader } from '@taiga-ui/layout';
 		TuiHeader,
 		TuiError,
 		TuiButton,
+		TuiHint,
 		TuiLabel,
 		TuiTextfield,
 		TuiTitle,
 		TuiInputNumber,
 		TuiRadio,
 		TuiRadioList,
-		RouterLink
+		RouterLink,
 	],
 	templateUrl: './calculadora.component.html',
 	// styleUrl: './calculadora.component.scss',

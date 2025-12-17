@@ -37,15 +37,18 @@
 	}
 
 	<footer class="!mt-4">
-		<button tuiButton type="submit" size="m" [disabled]="notaForm.invalid">Calcular</button>
+		<button tuiButton type="submit" size="m" [disabled]="notaForm.invalid" tuiHintAppearance="dark" tuiHintDirection="bottom" [tuiHint]="notaForm.invalid ? 'Preencha todos os campos para calcular' : ''">Calcular</button>
 		<button tuiButton type="reset" size="m" appearance="flat">Limpar</button>
 	</footer>
 </form>
 
 @if (nota) {
-	<h1 tuiTitle>Sua media da N1 é {{ mediaN1?.toFixed(1) }}</h1>
+	<!-- Transformar em componente -->
+	<section class="bg-white rounded-lg p-10 max-w-xl mt-4">
+		<h1 tuiTitle>Sua media da N1 é {{ mediaN1?.toFixed(1) }}</h1>
 
-	<h1 tuiTitle>Você precisa de {{ nota.toFixed(1) }} na {{isQuartaProvaSelected ? 'Quarta prova' : 'N2'}}</h1>
+		<h1 tuiTitle>Você precisa de {{ nota.toFixed(1) }} na {{isQuartaProvaSelected ? 'Quarta prova' : 'N2'}}</h1>
+	</section>
 }
 
 <button tuiButton appearance="action-grayscale" iconStart="@tui.cog" routerLink="/configurar">Configurações</button>
