@@ -20,7 +20,7 @@
 	<tui-error [error]="getErroTratado('segundaNota')"/>
 
 	<h2 class="text-xl mt-4 m-0">Cálculo esperado</h2>
-	<tui-radio-list formControlName="notaEsperada" [itemContent]="content" [items]="objects" />
+	<tui-radio-list formControlName="notaEsperada" [itemContent]="content" [items]="choices" />
 	<ng-template #content let-data>
 		<span tuiTitle>
 			{{ data.name }}
@@ -36,6 +36,16 @@
 		<tui-error [error]="getErroTratado('terceiraNota')"/>
 	}
 
+	<h2 class="text-xl mt-4 m-0">Bonificações</h2>
+	<div formArrayName="points" class="flex flex-col">
+		@for (option of points; track option; let i = $index) {
+			<label>
+				<input tuiCheckbox size="s" type="checkbox" [formControlName]="i"/>
+				{{ option }}
+			</label>
+		}
+	</div>
+
 	<footer class="!mt-4">
 		<button tuiButton type="submit" size="m" [disabled]="notaForm.invalid" tuiHintAppearance="dark" tuiHintDirection="bottom" [tuiHint]="notaForm.invalid ? 'Preencha todos os campos para calcular' : ''">Calcular</button>
 		<button tuiButton type="reset" size="m" appearance="flat">Limpar</button>
@@ -47,7 +57,14 @@
 	<section class="bg-white rounded-lg p-10 max-w-xl mt-4">
 		<h1 tuiTitle>Sua media da N1 é {{ mediaN1?.toFixed(1) }}</h1>
 
-		<h1 tuiTitle>Você precisa de {{ nota.toFixed(1) }} na {{isQuartaProvaSelected ? 'Quarta prova' : 'N2'}}</h1>
+		<h1 tuiTitle>
+			@if (!isAF) {
+				Você precisa de {{ nota.toFixed(1) }} na {{ isQuartaProvaSelected ? 'Quarta prova' : 'N2' }}
+
+			} @else {
+				Você já está de AF. Precisará de {{ notaAF?.toFixed(1) }} na AF se tirar um 10 na quarta prova
+			}
+		</h1>
 	</section>
 }
 
