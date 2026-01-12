@@ -91,28 +91,28 @@ export class CalculadoraComponent {
 		return this.notaForm.controls.points as FormArray<FormControl<boolean>>;
 	}
 
-	get pontosSelecionados(): string[] {
-		return this.pointsArray.value
-		.map((checked, i) => checked ? this.points[i] : null)
-		.filter((v): v is string => v !== null);
-	}
-
 	calcularNota(): void {
-		const primeiraNota = this.notaForm.value.primeiraNota!;
-		const segundaNota = this.notaForm.value.segundaNota!;
-		const terceiraNota = this.notaForm.value.terceiraNota;
-		const pontos = this.pontosSelecionados;
+		let primeiraNota = this.notaForm.value.primeiraNota!;
+		let segundaNota = this.notaForm.value.segundaNota!;
+		let terceiraNota = this.notaForm.value.terceiraNota;
+		const pontos = this.pointsArray.value;
+		const hasTerceira = terceiraNota !== null && terceiraNota !== undefined;
 
-		console.log(pontos)
+		if(pontos[0]) (primeiraNota > segundaNota) ? primeiraNota++ : segundaNota++;
+		if(pontos[1] && hasTerceira) terceiraNota!++;
+		if(pontos[3] && hasTerceira) terceiraNota!+=2;
+
+		if(pontos[2]) {
+			primeiraNota++;
+			segundaNota++;
+		};
 
 		this.mediaN1 = (primeiraNota + segundaNota) / 2;
 		let formulaMedia = (35 - (primeiraNota + segundaNota)) / 3;
-
-		const hasTerceira = terceiraNota !== null && terceiraNota !== undefined;
-		this.nota = hasTerceira ? formulaMedia * 2 - terceiraNota : formulaMedia;
+		this.nota = hasTerceira ? formulaMedia * 2 - terceiraNota! : formulaMedia;
 
 		if (hasTerceira && this.nota > 10) {
-			this.mediaSimulada = (((this.mediaN1 * 2) + (((terceiraNota + 10) / 2) * 3)) / 5);
+			this.mediaSimulada = (((this.mediaN1 * 2) + (((terceiraNota! + 10) / 2) * 3)) / 5);
 			this.isAF = this.mediaSimulada >= 3;
 			if (this.isAF) this.notaAF = 10 - this.mediaSimulada;
 		}
