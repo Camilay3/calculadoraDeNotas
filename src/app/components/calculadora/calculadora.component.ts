@@ -111,8 +111,8 @@ export class CalculadoraComponent {
 		let formulaMedia = (35 - (primeiraNota + segundaNota)) / 3;
 		this.nota = hasTerceira ? formulaMedia * 2 - terceiraNota! : formulaMedia;
 
-		if (hasTerceira && this.nota > 10) {
-			this.mediaSimulada = (((this.mediaN1 * 2) + (((terceiraNota! + 10) / 2) * 3)) / 5);
+		if (this.nota > 10) {
+			this.mediaSimulada = (hasTerceira) ? (((this.mediaN1 * 2) + (((terceiraNota! + 10) / 2) * 3)) / 5) : (((this.mediaN1 * 2) + 30) / 5);
 			this.isAF = this.mediaSimulada >= 3;
 			if (this.isAF) this.notaAF = 10 - this.mediaSimulada;
 		}
