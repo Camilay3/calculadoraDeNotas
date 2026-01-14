@@ -38,9 +38,12 @@ export class CalculadoraComponent {
 
 	mediaN1: number | null = null;
 	nota: number | null = null;
-	isAF: boolean = false;
-	notaAF: number | null = null;
-	mediaSimulada: number | null = null;
+	isAFMax: boolean = false;
+	isAFMin: boolean = false;
+	notaAFMax: number | null = null;
+	notaAFMin: number | null = null;
+	mediaSimuladaMax: number | null = null;
+	mediaSimuladaMin: number | null = null;
 	value: string | null = null;
 
 	protected readonly choices = [
@@ -91,30 +94,61 @@ export class CalculadoraComponent {
 		return this.notaForm.controls.points as FormArray<FormControl<boolean>>;
 	}
 
-	calcularNota(): void {
-		let primeiraNota = this.notaForm.value.primeiraNota!;
-		let segundaNota = this.notaForm.value.segundaNota!;
-		let terceiraNota = this.notaForm.value.terceiraNota;
-		const pontos = this.pointsArray.value;
-		const hasTerceira = terceiraNota !== null && terceiraNota !== undefined;
+	get provaLabel(): string {
+		return this.isQuartaProvaSelected ? 'Quarta prova' : 'N2';
+	}
 
-		if(pontos[0]) (primeiraNota > segundaNota) ? primeiraNota++ : segundaNota++;
-		if(pontos[1] && hasTerceira) terceiraNota!++;
-		if(pontos[3] && hasTerceira) terceiraNota!+=2;
+	get resultado() {
+		if (this.nota == null) return null;
 
-		if(pontos[2]) {
-			primeiraNota++;
-			segundaNota++;
+		if (this.nota <= 10) {
+			return {
+				titulo: `Você precisa de ${this.nota.toFixed(1)} na ${this.provaLabel}`,
+				detalhe: null
+			};
+		}
+
+		return {
+			titulo: `Você já está de AF. Precisará de ${this.notaAFMax?.toFixed(1)} na AF se tirar um 10 na ${this.provaLabel}`,
+			detalhe: this.isAFMin ? `precisará de ${this.notaAFMin?.toFixed(1)} na AF` : `não terá direito a AF por ter uma média (${this.mediaSimuladaMin?.toFixed(1)}) menor que 3`
 		};
+	}
+
+	calcularNota(): void {
+		const { p1: primeiraNota, p2: segundaNota, p3: terceiraNota, hasP3: hasTerceira } = this.aplicarPontos();
 
 		this.mediaN1 = (primeiraNota + segundaNota) / 2;
 		let formulaMedia = (35 - (primeiraNota + segundaNota)) / 3;
 		this.nota = hasTerceira ? formulaMedia * 2 - terceiraNota! : formulaMedia;
 
-		if (this.nota > 10) {
-			this.mediaSimulada = (hasTerceira) ? (((this.mediaN1 * 2) + (((terceiraNota! + 10) / 2) * 3)) / 5) : (((this.mediaN1 * 2) + 30) / 5);
-			this.isAF = this.mediaSimulada >= 3;
-			if (this.isAF) this.notaAF = 10 - this.mediaSimulada;
+		this.calcularMediaSimulada(this.nota, this.mediaN1, hasTerceira, terceiraNota!);
+	}
+
+	aplicarPontos() {
+		const pontos = this.pointsArray.value;
+		let p1 = this.notaForm.value.primeiraNota!;
+		let p2 = this.notaForm.value.segundaNota!;
+		let p3 = this.notaForm.value.terceiraNota;
+		let hasP3 = p3 !== null && p3 !== undefined;
+
+		if (pontos[0]) (p1 > p2) ? p1++ : p2++;
+		if (pontos[1] && hasP3) p3!++;
+		if (pontos[2]) { p1++; p2++; }
+		if (pontos[3] && hasP3) p3!+=2;
+		// if (pontos[3]) p3 = (p3 ?? 0) + 2;
+
+		return { p1, p2, p3, hasP3 };
+	}
+
+	calcularMediaSimulada(nota: number, mediaN1: number, hasTerceira: boolean, terceiraNota?: number) {
+		if (nota > 10) {
+			this.mediaSimuladaMax = (hasTerceira) ? (((mediaN1 * 2) + (((terceiraNota! + 10) / 2) * 3)) / 5) : (((mediaN1 * 2) + 30) / 5);
+			this.isAFMax = this.mediaSimuladaMax >= 3;
+			if (this.isAFMax) this.notaAFMax = 10 - this.mediaSimuladaMax;
+
+			this.mediaSimuladaMin = (hasTerceira) ? (((mediaN1 * 2) + (((terceiraNota!) / 2) * 3)) / 5) : (((mediaN1 * 2) + 30) / 5);
+			this.isAFMin = this.mediaSimuladaMin >= 3;
+			if (this.isAFMin) this.notaAFMin = 10 - this.mediaSimuladaMin;
 		}
 	}
 

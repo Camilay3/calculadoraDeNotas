@@ -52,17 +52,15 @@
 	</footer>
 </form>
 
-@if (nota) {
-	<!-- Transformar em componente -->
+@if (resultado) {
 	<section class="bg-white rounded-lg p-10 max-w-xl mt-4">
-		<h1 tuiTitle>Sua media da N1 é {{ mediaN1?.toFixed(1) }}</h1>
-
 		<h1 tuiTitle>
-			@if (!isAF) {
-				Você precisa de {{ nota.toFixed(1) }} na {{ isQuartaProvaSelected ? 'Quarta prova' : 'N2' }}
+			Sua media da N1 é {{ mediaN1?.toFixed(1) }} <br>
+			{{ resultado.titulo }}
 
-			} @else {
-				Você já está de AF. Precisará de {{ notaAF?.toFixed(1) }} na AF se tirar um 10 na {{ isQuartaProvaSelected ? 'Quarta prova' : 'N2' }}
+			@if (resultado.detalhe) {
+				<br>
+				Porém, se zerar a quarta prova, você {{ resultado.detalhe }}
 			}
 		</h1>
 	</section>
