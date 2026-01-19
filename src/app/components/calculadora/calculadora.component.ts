@@ -44,6 +44,7 @@ export class CalculadoraComponent {
 	notaAFMin: number | null = null;
 	mediaSimuladaMax: number | null = null;
 	mediaSimuladaMin: number | null = null;
+	notaNecessariaParaAF: number | null = null;
 	value: string | null = null;
 
 	protected readonly choices = [
@@ -108,7 +109,8 @@ export class CalculadoraComponent {
 
 		return {
 			titulo: `Você já está de AF. Precisará de ${this.notaAFMax?.toFixed(1)} na AF se tirar um 10 na ${this.provaLabel}`,
-			detalhe: this.isAFMin ? `${option}, você precisará de ${this.notaAFMin?.toFixed(1)} na AF` : `${option}, você não terá direito a AF por ter uma média (${this.mediaSimuladaMin?.toFixed(1)}) menor que 3`
+			detalhe: this.isAFMin ? `${option}, você precisará de ${this.notaAFMin?.toFixed(1)} na AF` : `${option}, você não terá direito a AF por ter uma média (${this.mediaSimuladaMin?.toFixed(1)}) menor que 3`,
+			extra: this.notaNecessariaParaAF ? `Para ter direito a AF, você precisará tirar ${this.notaNecessariaParaAF.toFixed(1)} na ${this.provaLabel}` : null
 		};
 	}
 
@@ -146,7 +148,11 @@ export class CalculadoraComponent {
 
 			this.mediaSimuladaMin = (hasTerceira) ? (((mediaN1 * 2) + (((terceiraNota!) / 2) * 3)) / 5) : ((mediaN1 * 2) / 5);
 			this.isAFMin = this.mediaSimuladaMin >= 3;
-			if (this.isAFMin) this.notaAFMin = 10 - this.mediaSimuladaMin;
+			if (this.isAFMin) {
+				this.notaAFMin = 10 - this.mediaSimuladaMin;
+			} else {
+				this.notaNecessariaParaAF = (hasTerceira) ? (((15 - (mediaN1*2))/3)*2) - terceiraNota! : (15 - (mediaN1*2))/3;
+			}
 		}
 	}
 
