@@ -28,7 +28,7 @@
 		</span>
 	</ng-template>
 
-	@if (isQuartaProvaSelected) {
+	@if (isQuartaProvaSelected || isAFSelected) {
 		<tui-textfield>
 			<label tuiLabel for="terceiraNota">Terceira nota</label>
 			<input tuiInputNumber formControlName="terceiraNota" placeholder="Digite a terceira nota" id="terceiraNota"/>
@@ -36,14 +36,23 @@
 		<tui-error [error]="getErroTratado('terceiraNota')"/>
 	}
 
-	<h2 class="text-xl mt-4 m-0">Média considerada</h2>
-	<tui-radio-list formControlName="mediaEsperada" [itemContent]="contentMedia" [items]="medias" />
-	<ng-template #contentMedia let-data>
-		<span tuiTitle>
-			{{ data.name }}
-			<span tuiSubtitle>{{ data.description }}</span>
-		</span>
-	</ng-template>
+	@if (isAFSelected) {
+		<tui-textfield>
+			<label tuiLabel for="quartaNota">Quarta nota</label>
+			<input tuiInputNumber formControlName="quartaNota" placeholder="Digite a quarta nota" id="quartaNota"/>
+		</tui-textfield>
+		<tui-error [error]="getErroTratado('quartaNota')"/>
+
+	} @else {
+		<h2 class="text-xl mt-4 m-0">Média considerada</h2>
+		<tui-radio-list formControlName="mediaEsperada" [itemContent]="contentMedia" [items]="medias" />
+		<ng-template #contentMedia let-data>
+			<span tuiTitle>
+				{{ data.name }}
+				<span tuiSubtitle>{{ data.description }}</span>
+			</span>
+		</ng-template>
+	}
 
 	<h2 class="text-xl mt-4 m-0">Bonificações</h2>
 	<div formArrayName="points" class="flex flex-col">
@@ -66,7 +75,8 @@
 		<h1 class="text-xl mb-4 m-0">A partir da média {{ media }} como regra, sua situação acadêmica é:</h1>
 
 		<h2 tuiTitle>
-			Sua media da N1 é {{ (mediaN1!/2).toFixed(1) }} <br>
+			Sua média da N1 é {{ (mediaN1!/2).toFixed(1) }} <br>
+			@if (mediaN2 || mediaN2 == 0) { Sua média da N2 é {{ (mediaN2).toFixed(1) }} <br> }
 			{{ resultado.titulo }}
 
 			@if (resultado.detalhe) {
