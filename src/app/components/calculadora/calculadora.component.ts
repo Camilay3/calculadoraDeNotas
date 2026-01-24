@@ -162,7 +162,7 @@ export class CalculadoraComponent {
 		if (this.isAFMax) this.notaAFMax = 10 - this.mediaSimuladaMax;
 
 		this.mediaSimuladaMin = (hasTerceira) ? ((mediaN1 + (((terceiraNota!) / 2) * 3)) / 5) : (mediaN1 / 5);
-		this.isAFMin = this.mediaSimuladaMin >= 3;
+		this.isAFMin = Number.parseInt(this.mediaSimuladaMin.toFixed(1)) >= 3;
 		if (this.isAFMin) {
 			this.notaAFMin = 10 - this.mediaSimuladaMin;
 		} else {
