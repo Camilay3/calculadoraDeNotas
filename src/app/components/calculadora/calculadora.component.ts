@@ -5,58 +5,40 @@ import { ReactiveFormsModule, FormControl, FormGroup, Validators, FormsModule, F
 import { TuiButton, TuiLabel, TuiTextfield, TuiTitle, TuiError, TuiHint } from '@taiga-ui/core';
 import { TuiCheckbox, TuiInputNumber, TuiRadio, TuiRadioList } from '@taiga-ui/kit';
 import { TuiForm, TuiHeader } from '@taiga-ui/layout';
+import { startWith } from 'rxjs';
+import { IAF, Choice, MediaOption } from '../../interfaces/interfaces';
+
+class State {
+	media: number = 7;
+	mediaN1: number | null = null;;
+	mediaN2: number | null = null;
+	nota: number | null = null;
+	af: IAF = {
+		max: null,
+		min: null,
+		mediaMax: null,
+		mediaMin: null,
+		precisa: null,
+		isMax: false,
+		isMin: false,
+	}
+}
 
 @Component({
 	selector: 'app-calculadora',
 	standalone: true,
 	imports: [
-		ReactiveFormsModule,
-		FormsModule,
+		ReactiveFormsModule, FormsModule, TuiForm, TuiHeader, TuiError, TuiButton, TuiHint, TuiLabel, TuiTextfield, TuiTitle, TuiInputNumber, TuiRadio, TuiRadioList, TuiCheckbox,
 		// RouterLink,
-		TuiForm,
-		TuiHeader,
-		TuiError,
-		TuiButton,
-		TuiHint,
-		TuiLabel,
-		TuiTextfield,
-		TuiTitle,
-		TuiInputNumber,
-		TuiRadio,
-		TuiRadioList,
-		TuiCheckbox,
 	],
 	templateUrl: './calculadora.component.html',
 	// styleUrl: './calculadora.component.scss',
 })
-export class CalculadoraComponent {
-	value: string | null = null;
-	mediaN1: number | null = null;
-	mediaN2: number | null = null;
-	nota: number | null = null;
-	isAFMax: boolean = false;
-	isAFMin: boolean = false;
-	notaAFMax: number | null = null;
-	notaAFMin: number | null = null;
-	mediaSimuladaMax: number | null = null;
-	mediaSimuladaMin: number | null = null;
-	notaNecessariaParaAF: number | null = null;
-	media: number | null = null;
+export class CalculadoraComponent implements OnInit {
+	state: State = new State();
 	provaLabel: string = 'Quarta prova';
-	pointsArray!: FormArray<FormControl<boolean>>;
-	hasTerceira: boolean = true;
-	hasQuarta: boolean = false;
 
-	constructor() {
-		this.pointsArray = this.notaForm.controls.points as FormArray<FormControl<boolean>>;
-		this.notaForm.controls.notaEsperada.valueChanges.subscribe(value => {
-			this.provaLabel = value?.name ?? 'Quarta prova';
-			this.updateValidators();
-		});
-		this.updateValidators();
-	}
-
-	protected readonly choices = [
+	protected readonly choices: Choice[] = [
 		{
 			name: 'Quarta prova',
 			description: 'Calcula quanto você precisará tirar na última prova. Será necessário fornecer a terceira nota',
@@ -71,133 +53,125 @@ export class CalculadoraComponent {
 		},
 	];
 
-	protected readonly points = [
+	protected readonly points: string[] = [
 		'Um ponto na menor nota da N1',
 		'Um ponto na menor nota da N2',
 		'Um ponto na média da N1',
 		'Um ponto na média da N2'
 	];
 
-	protected readonly medias = [
-		{
-			name: 'Padrão',
-			description: 'Calcula a média como 7',
-			media: 7
-		},
-		{
-			name: 'Conceito B',
-			description: 'Calcula a média como 6',
-			media: 6
-		},
-		{
-			name: 'Conceito C',
-			description: 'Calcula a média como 5',
-			media: 5
-		},
+	protected readonly medias: MediaOption[] = [
+		{ name: 'Padrão', description: 'Calcula a média como 7', media: 7 },
+		{ name: 'Conceito B', description: 'Calcula a média como 6', media: 6 },
+		{ name: 'Conceito C', description: 'Calcula a média como 5', media: 5 },
 	];
 
 	readonly notaForm = new FormGroup({
-		primeiraNota: new FormControl<number | null>(null, [
-			Validators.required,
-			Validators.min(0),
-			Validators.max(10),
-		]),
-		segundaNota: new FormControl<number | null>(null, [
-			Validators.required,
-			Validators.min(0),
-			Validators.max(10),
-		]),
-		notaEsperada: new FormControl<{ name: string; description: string } | null>(
-			this.choices[0],
-			Validators.required
-		),
+		primeiraNota: new FormControl<number | null>(null, [Validators.required, Validators.min(0), Validators.max(10)]),
+		segundaNota: new FormControl<number | null>(null, [Validators.required, Validators.min(0), Validators.max(10)]),
+		terceiraNota: new FormControl<number | null>(null),
+		quartaNota: new FormControl<number | null>(null),
 
-		terceiraNota: new FormControl<number | null>(null, [
-			Validators.min(0),
-			Validators.max(10)
-		]),
+		notaEsperada: new FormControl<Choice | null>(this.choices[0], Validators.required),
+		mediaEsperada: new FormControl<MediaOption | null>(this.medias[0]),
 
-		quartaNota: new FormControl<number | null>(null, [
-			Validators.min(0),
-			Validators.max(10)
-		]),
-
-		points: new FormArray(
-			this.points.map(() => new FormControl(false))
-		),
-
-		mediaEsperada: new FormControl<{ name: string; description: string, media: number } | null>(
-			this.medias[0],
-		),
+		points: new FormArray(this.points.map(() => new FormControl(false))),
 	});
 
+	ngOnInit() {
+		this.notaForm.controls.notaEsperada.valueChanges
+			.pipe(startWith(this.notaForm.controls.notaEsperada.value))
+			.subscribe(v => {
+				this.provaLabel = v?.name ?? 'Quarta prova';
+				this.updateValidators();
+			});
+	}
+
+	get pointsArray() { return this.notaForm.controls.points as FormArray<FormControl<boolean>>; }
+	get isQuartaProvaSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'Quarta prova'; }
+	get isAFSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'AF'; }
+
 	get resultado() {
-		if (this.nota == null) return null;
+		const s = this.state;
+		if (s.nota == null) return null;
 
-		if (this.hasQuarta) {
-			if (this.notaNecessariaParaAF! > 7) return { titulo: `Infelizmente você não tem direito a AF por ter uma média (${this.nota.toFixed(1)}) menor que 3`};
+		if (this.isAFSelected) {
+			if (s.af.precisa! > 7) return { titulo: `Infelizmente você não tem direito a AF por ter uma média (${s.nota.toFixed(1)}) menor que 3` };
 
-			return (this.notaNecessariaParaAF) ? { titulo: `Você precisa de ${this.notaNecessariaParaAF.toFixed(1)} na AF!`} : { titulo: `Parabéns, você foi aprovado com média ${this.nota.toFixed(1)}!`}
+			return s.af.precisa
+				? { titulo: `Você precisa de ${s.af.precisa.toFixed(1)} na AF!` }
+				: { titulo: `Parabéns, você foi aprovado com média ${s.nota.toFixed(1)}!` };
 		}
 
-		if (this.nota == 0) return { titulo: `Parabéns, você não precisa de mais pontos para ficar na média` };
-		if (this.nota <= 10) return { titulo: `Você precisa de ${this.nota.toFixed(1)} na ${this.provaLabel}` };
+		if (s.nota == 0) return { titulo: `Parabéns, você não precisa de mais pontos para ficar na média` };
+		if (s.nota <= 10) return { titulo: `Você precisa de ${s.nota.toFixed(1)} na ${this.provaLabel}` };
 
 		return {
-			titulo: `Você já está de AF. Precisará de ${this.notaAFMax?.toFixed(1)} na AF se tirar um 10 na ${this.provaLabel}`,
-			detalhe: this.isAFMin ? `${this.provaLabel}, você precisará de ${this.notaAFMin?.toFixed(1)} na AF` : `${this.provaLabel}, você não terá direito a AF por ter uma média (${this.mediaSimuladaMin?.toFixed(1)}) menor que 3`,
-			extra: this.notaNecessariaParaAF ? `Para ter direito a AF, você precisará tirar ${this.notaNecessariaParaAF.toFixed(1)} na ${this.provaLabel}` : null
+			titulo: `Você já está de AF. Precisará de ${s.af.max?.toFixed(1)} na AF se tirar um 10 na ${this.provaLabel}`,
+			detalhe: s.af.isMin
+				? `${this.provaLabel}, você precisará de ${s.af.min?.toFixed(1)} na AF`
+				: `${this.provaLabel}, você não terá direito a AF por ter uma média (${s.af.mediaMin?.toFixed(1)}) menor que 3`,
+			extra: s.af.precisa ? `Para ter direito a AF, você precisará tirar ${s.af.precisa.toFixed(1)} na ${this.provaLabel}` : null,
 		};
 	}
 
 	calcularNota() {
-		const { p1: primeiraNota, p2: segundaNota, p3: terceiraNota, p4: quartaNota } = this.aplicarPontos();
-		this.media = this.notaForm.controls.mediaEsperada.value?.media ?? 7;
-		this.mediaN1 = (primeiraNota + segundaNota);
+		const { p1, p2, p3, p4 } = this.aplicarPontos();
+		const media = this.notaForm.value.mediaEsperada?.media ?? 7;
 
-		if (this.hasQuarta) {
-			this.mediaN2 = (terceiraNota! + quartaNota!) / 2;
-			this.nota = (this.mediaN1 +  (3 * this.mediaN2)) / 5;
-			this.notaNecessariaParaAF = (Number.parseInt(this.nota.toFixed(1)) < this.media) ? 10 - this.nota : null;
-			return
+		this.state.media = media;
+		this.state.mediaN1 = p1 + p2;
+
+		if (this.isAFSelected) {
+			this.state.mediaN2 = (p3! + p4!) / 2;
+			this.state.nota = (this.state.mediaN1 + 3 * this.state.mediaN2) / 5;
+			this.state.af.precisa = this.state.nota < media ? 10 - this.state.nota : null;
+			return;
 		}
-		let formulaMedia = ((this.media * 5) - (this.mediaN1)) / 3;
-		this.nota = this.hasTerceira ? (formulaMedia * 2) - terceiraNota! : formulaMedia;
 
-		if (this.nota > 10) this.calcularMediaSimulada(this.mediaN1, terceiraNota!);
+		const formula = ((media * 5) - this.state.mediaN1) / 3;
+		this.state.nota = this.isQuartaProvaSelected ? (formula * 2) - p3! : formula;
+
+		if (this.state.nota > 10) this.calcularMediaSimulada(this.state.mediaN1, p3!);
 	}
 
 	aplicarPontos() {
-		const pontos = this.pointsArray.value;
+		const [b1, b2, b3, b4] = this.pointsArray.value;
+
 		let p1 = this.notaForm.value.primeiraNota!;
 		let p2 = this.notaForm.value.segundaNota!;
 		let p3 = this.notaForm.value.terceiraNota;
 		let p4 = this.notaForm.value.quartaNota;
-		this.hasTerceira = p3 !== null && p3 !== undefined;
-		this.hasQuarta = p4 !== null && p4 !== undefined;
 
-		if (pontos[0]) (p1 > p2) ? p1++ : p2++;
-		if (pontos[1]) (this.hasTerceira && this.hasQuarta)
-				? ((p3! > p4!) ? p3!++ : p4!++)
-				:  p3!++;
-		if (pontos[2]) { p1++; p2++; }
-		if (pontos[3] && this.hasTerceira) p3!+=2;
-		// if (pontos[3]) p3 = (p3 ?? 0) + 2;
+		if (b1) (p1 > p2 ? p2++ : p1++);
+		if (b2 && p3 != null) (p4 != null ? (p3 > p4 ? p4++ : p3++) : p3++);
+		if (b3) { p1++; p2++; }
+		if (b4 && p3 != null) p3 += 2;
 
 		return { p1, p2, p3, p4 };
 	}
 
 	calcularMediaSimulada(mediaN1: number, terceiraNota?: number) {
-		this.mediaSimuladaMax = (this.hasTerceira) ? ((mediaN1 + (((terceiraNota! + 10) / 2) * 3)) / 5) : ((mediaN1 + 30) / 5);
-		this.isAFMax = this.mediaSimuladaMax >= 3;
-		if (this.isAFMax) this.notaAFMax = 10 - this.mediaSimuladaMax;
+		const s = this.state;
 
-		this.mediaSimuladaMin = (this.hasTerceira) ? ((mediaN1 + (((terceiraNota!) / 2) * 3)) / 5) : (mediaN1 / 5);
-		this.isAFMin = Number.parseInt(this.mediaSimuladaMin.toFixed(1)) >= 3;
-		if (this.isAFMin) {
-			this.notaAFMin = 10 - this.mediaSimuladaMin;
+		s.af.mediaMax = this.isQuartaProvaSelected
+			? (mediaN1 + (((terceiraNota! + 10) / 2) * 3)) / 5
+			: (mediaN1 + 30) / 5;
+
+		s.af.isMax = s.af.mediaMax >= 3;
+		if (s.af.isMax) s.af.max = 10 - s.af.mediaMax;
+
+		s.af.mediaMin = this.isQuartaProvaSelected
+			? (mediaN1 + ((terceiraNota! / 2) * 3)) / 5
+			: mediaN1 / 5;
+
+		s.af.isMin = s.af.mediaMin >= 3;
+		if (s.af.isMin) {
+			s.af.min = 10 - s.af.mediaMin;
 		} else {
-			this.notaNecessariaParaAF = (this.hasTerceira) ? (((15 - mediaN1)/3)*2) - terceiraNota! : (15 - mediaN1)/3;
+			s.af.precisa = this.isQuartaProvaSelected
+				? (((15 - mediaN1) / 3) * 2) - terceiraNota!
+				: (15 - mediaN1) / 3;
 		}
 	}
 
@@ -212,59 +186,32 @@ export class CalculadoraComponent {
 		return null;
 	}
 
-	get isQuartaProvaSelected(): boolean {
-		const selectedOption = this.notaForm.controls.notaEsperada.value;
-		return selectedOption?.name === 'Quarta prova';
-	}
+	updateValidators() {
+		const terceira = this.notaForm.controls.terceiraNota;
+		const quarta = this.notaForm.controls.quartaNota;
+		const media = this.notaForm.controls.mediaEsperada;
 
-	get isAFSelected(): boolean {
-		const selectedOption = this.notaForm.controls.notaEsperada.value;
-		return selectedOption?.name === 'AF';
-	}
-
-	updateValidators(): void {
-		const terceiraNotaControl = this.notaForm.controls.terceiraNota;
-		const quartaNotaControl = this.notaForm.controls.quartaNota;
-		const mediasControl = this.notaForm.controls.mediaEsperada;
-		this.nota = null;
+		this.state.nota = null;
 
 		if (!this.isQuartaProvaSelected && !this.isAFSelected) {
-			terceiraNotaControl.clearValidators();
-			terceiraNotaControl.setValue(null, { emitEvent: false });
-			quartaNotaControl.clearValidators();
-			quartaNotaControl.setValue(null, { emitEvent: false });
-			mediasControl.clearValidators();
-			mediasControl.setValue(this.medias[0], { emitEvent: false });
+			terceira.clearValidators();
+			quarta.clearValidators();
+			media.setValue(this.medias[0], { emitEvent: false });
 
-			terceiraNotaControl.updateValueAndValidity();
-			quartaNotaControl.updateValueAndValidity();
-			mediasControl.updateValueAndValidity();
-			return;
-		}
-
-		terceiraNotaControl.setValidators([
-			Validators.required,
-			Validators.min(0),
-			Validators.max(10),
-		]);
-
-		if (this.isAFSelected) {
-			quartaNotaControl.setValidators([
-				Validators.required,
-				Validators.min(0),
-				Validators.max(10),
-			]);
-			mediasControl.clearValidators();
-			mediasControl.setValue(null, { emitEvent: false });
 		} else {
-			quartaNotaControl.clearValidators();
-			quartaNotaControl.setValue(null, { emitEvent: false });
-			mediasControl.clearValidators();
-			mediasControl.setValue(this.medias[0], { emitEvent: false });
+			terceira.setValidators([Validators.required, Validators.min(0), Validators.max(10)]);
+
+			if (this.isAFSelected) {
+				quarta.setValidators([Validators.required, Validators.min(0), Validators.max(10)]);
+				media.setValue(null, { emitEvent: false });
+			} else {
+				quarta.clearValidators();
+				media.setValue(this.medias[0], { emitEvent: false });
+			}
 		}
 
-		terceiraNotaControl.updateValueAndValidity();
-		quartaNotaControl.updateValueAndValidity();
-		mediasControl.updateValueAndValidity();
+		terceira.updateValueAndValidity();
+		quarta.updateValueAndValidity();
+		media.updateValueAndValidity();
 	}
 }

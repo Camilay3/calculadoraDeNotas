@@ -72,11 +72,11 @@
 
 @if (resultado) {
 	<section class="bg-white rounded-lg p-10 max-w-xl mt-4">
-		<h1 class="text-xl mb-4 m-0">A partir da média {{ media }} como regra, sua situação acadêmica é:</h1>
+		<h1 class="text-xl mb-4 m-0">A partir da média {{ state.media }} como regra, sua situação acadêmica é:</h1>
 
 		<h2 tuiTitle>
-			Sua média da N1 é {{ (mediaN1!/2).toFixed(1) }} <br>
-			@if (mediaN2 || mediaN2 == 0) { Sua média da N2 é {{ (mediaN2).toFixed(1) }} <br> }
+			Sua média da N1 é {{ (state.mediaN1!/2).toFixed(1) }} <br>
+			@if (state.mediaN2 || state.mediaN2 == 0) { Sua média da N2 é {{ (state.mediaN2).toFixed(1) }} <br> }
 			{{ resultado.titulo }}
 
 			@if (resultado.detalhe) {
