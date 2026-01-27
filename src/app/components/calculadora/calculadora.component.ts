@@ -6,7 +6,7 @@ import { TuiButton, TuiLabel, TuiTextfield, TuiTitle, TuiError, TuiHint } from '
 import { TuiCheckbox, TuiInputNumber, TuiRadio, TuiRadioList } from '@taiga-ui/kit';
 import { TuiForm, TuiHeader } from '@taiga-ui/layout';
 import { startWith } from 'rxjs';
-import { IAF, Choice, MediaOption } from '../../interfaces/interfaces';
+import { IAF, Choice, MediaOption, IResultado } from '../../interfaces/interfaces';
 
 class State {
 	media: number = 7;
@@ -91,7 +91,7 @@ export class CalculadoraComponent implements OnInit {
 	get isQuartaProvaSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'Quarta prova'; }
 	get isAFSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'AF'; }
 
-	get resultado() {
+	get resultado(): IResultado | null {
 		const s = this.state;
 		if (s.nota == null) return null;
 
@@ -103,7 +103,7 @@ export class CalculadoraComponent implements OnInit {
 				: { titulo: `Parabéns, você foi aprovado com média ${s.nota.toFixed(1)}!` };
 		}
 
-		if (s.nota == 0) return { titulo: `Parabéns, você não precisa de mais pontos para ficar na média` };
+		if (s.nota <= 0) return { titulo: `Parabéns, você não precisa de mais pontos por ter média (${s.af.mediaMin?.toFixed(1)}) suficiente` };
 		if (s.nota <= 10) return { titulo: `Você precisa de ${s.nota.toFixed(1)} na ${this.provaLabel}` };
 
 		return {
@@ -118,21 +118,26 @@ export class CalculadoraComponent implements OnInit {
 	calcularNota() {
 		const { p1, p2, p3, p4 } = this.aplicarPontos();
 		const media = this.notaForm.value.mediaEsperada?.media ?? 7;
+		const s = this.state;
 
-		this.state.media = media;
-		this.state.mediaN1 = p1 + p2;
+		s.media = media;
+		s.mediaN1 = p1 + p2;
 
 		if (this.isAFSelected) {
-			this.state.mediaN2 = (p3! + p4!) / 2;
-			this.state.nota = (this.state.mediaN1 + 3 * this.state.mediaN2) / 5;
-			this.state.af.precisa = this.state.nota < media ? 10 - this.state.nota : null;
+			s.mediaN2 = (p3! + p4!) / 2;
+			s.nota = (s.mediaN1 + 3 * s.mediaN2) / 5;
+			s.af.precisa = s.nota < media ? 10 - s.nota : null;
 			return;
 		}
 
-		const formula = ((media * 5) - this.state.mediaN1) / 3;
-		this.state.nota = this.isQuartaProvaSelected ? (formula * 2) - p3! : formula;
+		const formula = ((media * 5) - s.mediaN1) / 3;
+		s.nota = this.isQuartaProvaSelected ? (formula * 2) - p3! : formula;
 
-		if (this.state.nota > 10) this.calcularMediaSimulada(this.state.mediaN1, p3!);
+		if (s.nota <= 0) {
+			s.mediaN2 = p3!/2;
+			s.af.mediaMin = (s.mediaN1 + 3 * s.mediaN2) / 5;
+		}
+		if (s.nota > 10) this.calcularMediaSimulada(s.mediaN1, p3!);
 	}
 
 	aplicarPontos() {
