@@ -1,92 +1,123 @@
-<form tuiForm tuiFormSize="l" [formGroup]="notaForm" (ngSubmit)="calcularNota()" class="bg-white rounded-lg p-10 max-w-xl">
-	<header tuiHeader="l">
-		<h1 tuiTitle>
-			Simulador
-			<span tuiSubtitle>Formulário para avaliar sua situação acadêmica</span>
-		</h1>
-	</header>
+<main class="flex justify-between py-8 w-[80%] gap-8 m-auto">
+	<form tuiForm tuiFormSize="l" [formGroup]="notaForm" (ngSubmit)="calcularNota()" class="bg-white rounded-lg p-10 w-full max-w-2xl">
+		<header tuiHeader="l">
+			<h1 tuiTitle>
+				Simulador
+				<span tuiSubtitle>Formulário para avaliar sua situação acadêmica</span>
+			</h1>
+		</header>
 
-	<h2 class="text-xl mt-4 m-0">Notas da primeira etapa</h2>
-	<tui-textfield>
-		<label tuiLabel for="primeiraNota">Primeira nota</label>
-		<input tuiInputNumber formControlName="primeiraNota" placeholder="Digite a primeira nota" id="primeiraNota"/>
-	</tui-textfield>
-	<tui-error [error]="getErroTratado('primeiraNota')"/>
-
-	<tui-textfield>
-		<label tuiLabel for="segundaNota">Segunda nota</label>
-		<input tuiInputNumber formControlName="segundaNota" placeholder="Digite a segunda nota" id="segundaNota"/>
-	</tui-textfield>
-	<tui-error [error]="getErroTratado('segundaNota')"/>
-
-	<h2 class="text-xl mt-4 m-0">Cálculo esperado</h2>
-	<tui-radio-list formControlName="notaEsperada" [itemContent]="content" [items]="choices" />
-	<ng-template #content let-data>
-		<span tuiTitle>
-			{{ data.name }}
-			<span tuiSubtitle>{{ data.description }}</span>
-		</span>
-	</ng-template>
-
-	@if (isQuartaProvaSelected || isAFSelected) {
+		<h2 class="text-xl mt-4 m-0">Notas da primeira etapa</h2>
 		<tui-textfield>
-			<label tuiLabel for="terceiraNota">Terceira nota</label>
-			<input tuiInputNumber formControlName="terceiraNota" placeholder="Digite a terceira nota" id="terceiraNota"/>
+			<label tuiLabel for="primeiraNota">Primeira nota</label>
+			<input tuiInputNumber formControlName="primeiraNota" placeholder="Digite a primeira nota" id="primeiraNota"/>
 		</tui-textfield>
-		<tui-error [error]="getErroTratado('terceiraNota')"/>
-	}
+		<tui-error [error]="getErroTratado('primeiraNota')"/>
 
-	@if (isAFSelected) {
 		<tui-textfield>
-			<label tuiLabel for="quartaNota">Quarta nota</label>
-			<input tuiInputNumber formControlName="quartaNota" placeholder="Digite a quarta nota" id="quartaNota"/>
+			<label tuiLabel for="segundaNota">Segunda nota</label>
+			<input tuiInputNumber formControlName="segundaNota" placeholder="Digite a segunda nota" id="segundaNota"/>
 		</tui-textfield>
-		<tui-error [error]="getErroTratado('quartaNota')"/>
+		<tui-error [error]="getErroTratado('segundaNota')"/>
 
-	} @else {
-		<h2 class="text-xl mt-4 m-0">Média considerada</h2>
-		<tui-radio-list formControlName="mediaEsperada" [itemContent]="contentMedia" [items]="medias" />
-		<ng-template #contentMedia let-data>
+		<h2 class="text-xl mt-4 m-0">Cálculo esperado</h2>
+		<tui-radio-list formControlName="notaEsperada" [itemContent]="content" [items]="choices" />
+		<ng-template #content let-data>
 			<span tuiTitle>
 				{{ data.name }}
 				<span tuiSubtitle>{{ data.description }}</span>
 			</span>
 		</ng-template>
-	}
 
-	<h2 class="text-xl mt-4 m-0">Bonificações</h2>
-	<div formArrayName="points" class="flex flex-col">
-		@for (option of points; track option; let i = $index) {
-			<label>
-				<input tuiCheckbox size="s" type="checkbox" [formControlName]="i"/>
-				{{ option }}
-			</label>
+		@if (isQuartaProvaSelected || isAFSelected) {
+			<tui-textfield>
+				<label tuiLabel for="terceiraNota">Terceira nota</label>
+				<input tuiInputNumber formControlName="terceiraNota" placeholder="Digite a terceira nota" id="terceiraNota"/>
+			</tui-textfield>
+			<tui-error [error]="getErroTratado('terceiraNota')"/>
 		}
-	</div>
 
-	<footer class="!mt-4">
-		<button tuiButton type="submit" size="m" [disabled]="notaForm.invalid" tuiHintAppearance="dark" tuiHintDirection="bottom" [tuiHint]="notaForm.invalid ? 'Preencha todos os campos para calcular' : ''">Calcular</button>
-		<button tuiButton type="reset" size="m" appearance="flat">Limpar</button>
-	</footer>
-</form>
+		@if (isAFSelected) {
+			<tui-textfield>
+				<label tuiLabel for="quartaNota">Quarta nota</label>
+				<input tuiInputNumber formControlName="quartaNota" placeholder="Digite a quarta nota" id="quartaNota"/>
+			</tui-textfield>
+			<tui-error [error]="getErroTratado('quartaNota')"/>
 
-@if (resultado) {
-	<section class="bg-white rounded-lg p-10 max-w-xl mt-4">
-		<h1 class="text-xl mb-4 m-0">A partir da média {{ state.media }} como regra, sua situação acadêmica é:</h1>
+		} @else {
+			<h2 class="text-xl mt-4 m-0">Média considerada</h2>
+			<tui-radio-list formControlName="mediaEsperada" [itemContent]="contentMedia" [items]="medias" />
+			<ng-template #contentMedia let-data>
+				<span tuiTitle>
+					{{ data.name }}
+					<span tuiSubtitle>{{ data.description }}</span>
+				</span>
+			</ng-template>
+		}
 
-		<h2 tuiTitle>
-			Sua média da N1 é {{ (state.mediaN1!/2).toFixed(1) }} <br>
-			@if (state.mediaN2 || state.mediaN2 == 0) { Sua média da N2 é {{ (state.mediaN2).toFixed(1) }} <br> }
-			{{ resultado.titulo }}
-
-			@if (resultado.detalhe) {
-				<br>
-				Porém, se zerar a {{ resultado.detalhe }}
-				<br>
-				{{resultado.extra}}
+		<h2 class="text-xl mt-4 m-0">Bonificações</h2>
+		<div formArrayName="points" class="flex flex-col">
+			@for (option of points; track option; let i = $index) {
+				<label>
+					<input tuiCheckbox size="s" type="checkbox" [formControlName]="i"/>
+					{{ option }}
+				</label>
 			}
-		</h2>
+		</div>
+
+		<footer class="!mt-4">
+			<button tuiButton type="submit" size="m" [disabled]="notaForm.invalid" tuiHintAppearance="dark" tuiHintDirection="bottom" [tuiHint]="notaForm.invalid ? 'Preencha todos os campos para calcular' : ''">Calcular</button>
+			<button tuiButton type="reset" size="m" appearance="flat">Limpar</button>
+		</footer>
+	</form>
+
+	<!-- TRANSFORMAR EM COMPONENTE (com output) -->
+	<section class="flex flex-col w-full gap-4">
+		<div class="bg-white rounded-lg p-10">
+			<h1 class="text-xl mb-4 m-0">Parâmetros da simulação</h1>
+			<div class="flex flex-col gap-1">
+				<p class="text-sm m-0"><b>Média considerada:</b> {{ state.media }}</p>
+				<p class="text-sm m-0"><b>Tipo de cálculo:</b> {{ provaLabel }}</p>
+			</div>
+		</div>
+
+		<div class="flex gap-4">
+			<div class="w-full bg-white rounded-lg p-10">
+				<span class="text-sm">Média N1</span>
+				<h1 class="text-2xl m-0 {{ getClassColor(state.mediaN1!/2) }}">{{ (state.mediaN1!/2).toFixed(1) }}</h1>
+			</div>
+
+			@if (state.mediaN2 || state.mediaN2 == 0) {
+				<div class="w-full bg-white rounded-lg p-10">
+					<span class="text-sm">Média N2</span>
+					<h1 class="text-2xl m-0 {{ getClassColor(state.mediaN2) }}">{{ (state.mediaN2).toFixed(1) }}</h1>
+				</div>
+
+				<div class="w-full bg-white rounded-lg p-10">
+					<span class="text-sm">Média Final</span>
+					<h1 class="text-2xl m-0 {{ getClassColor(state.mediaFinal!) }}">{{ (state.mediaFinal!).toFixed(1) }}</h1>
+				</div>
+			}
+		</div>
+
+		<div class="bg-white rounded-lg p-10 flex flex-col">
+			<div class="results flex justify-between">
+				<h1 class="text-xl mb-4 m-0">Resultados</h1>
+				<span class="font-bold w-fit h-fit rounded-lg px-2 py-1 {{ getStateColor(state.aprovado) }}">{{ getState(state.aprovado) }}</span>
+			</div>
+			{{resultado?.titulo}}
+
+			@if (resultado?.detalhe) {
+				<ul>
+					@for (item of resultado?.detalhe; track $index) {
+						@if (item.length) {
+							<li>{{ item }}</li>
+						}
+					}
+				</ul>
+			}
+		</div>
 	</section>
-}
+</main>
 
 <!-- <button tuiButton appearance="action-grayscale" iconStart="@tui.cog" routerLink="/configurar">Configurações</button> -->

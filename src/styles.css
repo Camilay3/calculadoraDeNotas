@@ -5,3 +5,8 @@
 tui-root {
   --tui-background-base: transparent !important;
 }
+
+.t-root-content {
+	width: 100dvw;
+	height: 100dvh;
+}

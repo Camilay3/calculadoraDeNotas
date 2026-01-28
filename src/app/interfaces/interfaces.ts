@@ -21,6 +21,5 @@ export interface IAF {
 
 export interface IResultado {
 	titulo: string,
-	detalhe?: string,
-	extra?: string | null
+	detalhe?: string[],
 }

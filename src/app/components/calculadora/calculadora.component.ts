@@ -10,9 +10,11 @@ import { IAF, Choice, MediaOption, IResultado } from '../../interfaces/interface
 
 class State {
 	media: number = 7;
+	nota: number | null = null;
 	mediaN1: number | null = null;;
 	mediaN2: number | null = null;
-	nota: number | null = null;
+	mediaFinal: number | null = null;
+	aprovado: boolean = false;
 	af: IAF = {
 		max: null,
 		min: null,
@@ -87,6 +89,28 @@ export class CalculadoraComponent implements OnInit {
 			});
 	}
 
+	getClassColor(nota: number): string {
+		nota = Number.parseInt(nota.toFixed(1));
+
+		if (nota < 3 ) return 'text-red-500';
+		if (nota < 7 ) return 'text-yellow-500';
+		return 'text-green-500';
+	}
+
+	getStateColor(status: boolean): string | null {
+		if (status) return `bg-green-100 text-green-900`;
+		if (this.isAFSelected && this.state.af.precisa! > 7) return `bg-red-100 text-red-900`;
+		if (this.state.nota! > 10) return `bg-yellow-100 text-yellow-900`;
+		return null;
+	}
+
+	getState(status: boolean): string | null {
+		if (status) return 'Aprovado'
+		if (this.isAFSelected && this.state.af.precisa! > 7) return 'Reprovado'
+		if (this.state.nota! > 10) return 'Prova Final';
+		return null;
+	}
+
 	get pointsArray() { return this.notaForm.controls.points as FormArray<FormControl<boolean>>; }
 	get isQuartaProvaSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'Quarta prova'; }
 	get isAFSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'AF'; }
@@ -100,18 +124,23 @@ export class CalculadoraComponent implements OnInit {
 
 			return s.af.precisa
 				? { titulo: `Você precisa de ${s.af.precisa.toFixed(1)} na AF!` }
-				: { titulo: `Parabéns, você foi aprovado com média ${s.nota.toFixed(1)}!` };
+				: { titulo: `Parabéns, você foi aprovado!` };
 		}
 
-		if (s.nota <= 0) return { titulo: `Parabéns, você não precisa de mais pontos por ter média (${s.af.mediaMin?.toFixed(1)}) suficiente` };
+		if (s.aprovado) return { titulo: `Parabéns, você não precisa de mais pontos por ter média suficiente!` };
 		if (s.nota <= 10) return { titulo: `Você precisa de ${s.nota.toFixed(1)} na ${this.provaLabel}` };
 
 		return {
-			titulo: `Você já está de AF. Precisará de ${s.af.max?.toFixed(1)} na AF se tirar um 10 na ${this.provaLabel}`,
-			detalhe: s.af.isMin
-				? `${this.provaLabel}, você precisará de ${s.af.min?.toFixed(1)} na AF`
-				: `${this.provaLabel}, você não terá direito a AF por ter uma média (${s.af.mediaMin?.toFixed(1)}) menor que 3`,
-			extra: s.af.precisa ? `Para ter direito a AF, você precisará tirar ${s.af.precisa.toFixed(1)} na ${this.provaLabel}` : null,
+			titulo: `Você já está de AF. Análises da ${this.provaLabel}:`,
+			detalhe: [
+				`Ao tirar 10, precisará de ${s.af.max?.toFixed(1)} na AF.`,
+
+				s.af.isMin
+					? `Ao zerar, precisará de ${s.af.min?.toFixed(1)} na AF.`
+					: `Ao zerar, não terá direito a AF por ter uma média (${s.af.mediaMin?.toFixed(1)}) menor que 3.`,
+
+				s.af.precisa ? `Ao tirar ${s.af.precisa.toFixed(1)} terá direito a AF.` : '',
+			]
 		};
 	}
 
@@ -119,15 +148,27 @@ export class CalculadoraComponent implements OnInit {
 		const { p1, p2, p3, p4 } = this.aplicarPontos();
 		const media = this.notaForm.value.mediaEsperada?.media ?? 7;
 		const s = this.state;
+		s.aprovado = false;
+		s.af.precisa = null;
 
 		s.media = media;
 		s.mediaN1 = p1 + p2;
 
 		if (this.isAFSelected) {
 			s.mediaN2 = (p3! + p4!) / 2;
-			s.nota = (s.mediaN1 + 3 * s.mediaN2) / 5;
-			s.af.precisa = s.nota < media ? 10 - s.nota : null;
+			s.mediaFinal = (s.mediaN1 + 3 * s.mediaN2) / 5;
+			s.nota = s.mediaFinal;
+
+			if (s.mediaFinal < media) {
+				s.af.precisa = 10 - s.mediaFinal;
+			} else {
+				s.aprovado = true;
+			}
 			return;
+
+		} else {
+			s.mediaN2 = null;
+			s.mediaFinal = null;
 		}
 
 		const formula = ((media * 5) - s.mediaN1) / 3;
@@ -135,7 +176,8 @@ export class CalculadoraComponent implements OnInit {
 
 		if (s.nota <= 0) {
 			s.mediaN2 = p3!/2;
-			s.af.mediaMin = (s.mediaN1 + 3 * s.mediaN2) / 5;
+			s.mediaFinal = (s.mediaN1 + 3 * s.mediaN2) / 5;
+			s.aprovado = true;
 		}
 		if (s.nota > 10) this.calcularMediaSimulada(s.mediaN1, p3!);
 	}
