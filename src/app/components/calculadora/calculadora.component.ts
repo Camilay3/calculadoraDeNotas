@@ -92,8 +92,9 @@ export class CalculadoraComponent implements OnInit {
 	getClassColor(nota: number): string {
 		nota = Number.parseInt(nota.toFixed(1));
 
-		if (nota < 3 ) return 'text-red-500';
-		if (nota < 7 ) return 'text-yellow-500';
+		if (nota < 0) return 'text-neutral-500';
+		if (nota < 3) return 'text-red-500';
+		if (nota < 7) return 'text-yellow-500';
 		return 'text-green-500';
 	}
 
