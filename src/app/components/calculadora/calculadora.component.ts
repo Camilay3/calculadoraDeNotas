@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators, FormsModule, FormArray, } from '@angular/forms';
 // import { RouterLink } from '@angular/router';
 
-import { TuiButton, TuiLabel, TuiTextfield, TuiTitle, TuiError, TuiHint } from '@taiga-ui/core';
-import { TuiCheckbox, TuiInputNumber, TuiRadio, TuiRadioList } from '@taiga-ui/kit';
+import { TuiButton, TuiLabel, TuiTextfield, TuiTitle, TuiError, TuiHint, TuiIcon } from '@taiga-ui/core';
+import { TuiCheckbox, TuiInputNumber, TuiRadio, TuiRadioList, TuiTooltip } from '@taiga-ui/kit';
 import { TuiForm, TuiHeader } from '@taiga-ui/layout';
 import { startWith } from 'rxjs';
 import { IAF, Choice, MediaOption, IResultado } from '../../interfaces/interfaces';
@@ -30,7 +30,7 @@ class State {
 	selector: 'app-calculadora',
 	standalone: true,
 	imports: [
-		ReactiveFormsModule, FormsModule, TuiForm, TuiHeader, TuiError, TuiButton, TuiHint, TuiLabel, TuiTextfield, TuiTitle, TuiInputNumber, TuiRadio, TuiRadioList, TuiCheckbox,
+		ReactiveFormsModule, FormsModule, TuiForm, TuiHeader, TuiError, TuiButton, TuiHint, TuiLabel, TuiTextfield, TuiTitle, TuiInputNumber, TuiRadio, TuiRadioList, TuiCheckbox, TuiIcon, TuiTooltip,
 		// RouterLink,
 	],
 	templateUrl: './calculadora.component.html',
@@ -39,6 +39,7 @@ class State {
 export class CalculadoraComponent implements OnInit {
 	state: State = new State();
 	provaLabel: string = 'Quarta prova';
+	result: IResultado | null = null;
 
 	protected readonly choices: Choice[] = [
 		{
@@ -116,12 +117,12 @@ export class CalculadoraComponent implements OnInit {
 	get isQuartaProvaSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'Quarta prova'; }
 	get isAFSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'AF'; }
 
-	get resultado(): IResultado | null {
+	resultado(): IResultado {
 		const s = this.state;
-		if (s.nota == null) return null;
+		// if (s.nota == null) return null;
 
 		if (this.isAFSelected) {
-			if (s.af.precisa! > 7) return { titulo: `Infelizmente você não tem direito a AF por ter uma média (${s.nota.toFixed(1)}) menor que 3` };
+			if (s.af.precisa! > 7) return { titulo: `Infelizmente você não tem direito a AF por ter uma média (${s.nota!.toFixed(1)}) menor que 3` };
 
 			return s.af.precisa
 				? { titulo: `Você precisa de ${s.af.precisa.toFixed(1)} na AF!` }
@@ -129,7 +130,7 @@ export class CalculadoraComponent implements OnInit {
 		}
 
 		if (s.aprovado) return { titulo: `Parabéns, você não precisa de mais pontos por ter média suficiente!` };
-		if (s.nota <= 10) return { titulo: `Você precisa de ${s.nota.toFixed(1)} na ${this.provaLabel}` };
+		if (s.nota! <= 10) return { titulo: `Você precisa de ${s.nota!.toFixed(1)} na ${this.provaLabel}` };
 
 		return {
 			titulo: `Você já está de AF. Análises da ${this.provaLabel}:`,
@@ -181,6 +182,7 @@ export class CalculadoraComponent implements OnInit {
 			s.aprovado = true;
 		}
 		if (s.nota > 10) this.calcularMediaSimulada(s.mediaN1, p3!);
+		this.result = this.resultado();
 	}
 
 	aplicarPontos() {

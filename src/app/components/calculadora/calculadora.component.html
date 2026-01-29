@@ -72,10 +72,14 @@
 	</form>
 
 	<!-- TRANSFORMAR EM COMPONENTE (com output) -->
-	@if (resultado) {
+	@if (result) {
 		<section class="flex flex-col w-full gap-4">
 			<div class="bg-white rounded-lg p-10">
-				<h1 class="text-xl mb-4 m-0">Parâmetros da simulação</h1>
+				<h1 class="text-xl mb-4 m-0">
+					Parâmetros da simulação
+					<tui-icon tuiHintDirection="right" tuiTooltip="Para atualizar os resultados utilizando novos parâmetros, clique em 'Calcular'"/>
+				</h1>
+
 				<div class="flex flex-col gap-1">
 					<p class="text-sm m-0"><b>Média considerada:</b> {{ state.media }}</p>
 					<p class="text-sm m-0"><b>Tipo de cálculo:</b> {{ provaLabel }}</p>
@@ -108,28 +112,30 @@
 						<span class="text-sm">Média Final</span>
 						<h1 class="text-2xl m-0 {{ getClassColor(state.mediaFinal!) }}">{{ (state.mediaFinal!).toFixed(1) }}</h1>
 					</div>
-				} -->
-			</div>
-
-			<div class="bg-white rounded-lg p-10 flex flex-col">
-				<div class="results flex justify-between">
-					<h1 class="text-xl mb-4 m-0">Resultados</h1>
-					<span class="font-bold w-fit h-fit rounded-lg px-2 py-1 {{ getStateColor(state.aprovado) }}">{{ getState(state.aprovado) }}</span>
+					} -->
 				</div>
-				{{resultado.titulo}}
 
-				@if (resultado.detalhe) {
-					<ul>
-						@for (item of resultado.detalhe; track $index) {
-							@if (item.length) {
-								<li>{{ item }}</li>
+				<div class="bg-white rounded-lg p-10 flex flex-col">
+					<div class="results flex justify-between">
+						<h1 class="text-xl mb-4 m-0">Resultados detalhados</h1>
+						<span class="font-bold w-fit h-fit rounded-lg px-2 py-1 {{ getStateColor(state.aprovado) }}">{{ getState(state.aprovado) }}</span>
+					</div>
+					{{result.titulo}}
+
+					@if (result.detalhe) {
+						<ul>
+							@for (item of result.detalhe; track $index) {
+								@if (item.length) {
+									<li>{{ item }}</li>
+								}
 							}
-						}
-					</ul>
-				}
-			</div>
-		</section>
-	}
-</main>
+						</ul>
+					}
+				</div>
+
+				<a class="text-xs text-neutral-600 px-1 ml-auto" href="https://github.com/Camilay3/calculadoraDeNotas/issues/new" target="_blank" rel="noopener noreferrer">Encontrou um problema?</a>
+			</section>
+		}
+	</main>
 
 <!-- <button tuiButton appearance="action-grayscale" iconStart="@tui.cog" routerLink="/configurar">Configurações</button> -->
