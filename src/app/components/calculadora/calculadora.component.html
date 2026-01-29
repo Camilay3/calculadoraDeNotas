@@ -67,7 +67,7 @@
 
 		<footer class="!mt-4">
 			<button tuiButton type="submit" size="m" [disabled]="notaForm.invalid" tuiHintAppearance="dark" tuiHintDirection="bottom" [tuiHint]="notaForm.invalid ? 'Preencha todos os campos para calcular' : ''">Calcular</button>
-			<button tuiButton type="reset" size="m" appearance="flat">Limpar</button>
+			<button tuiButton type="reset" size="m" appearance="flat" (click)="result = null">Limpar</button>
 		</footer>
 	</form>
 
@@ -77,7 +77,7 @@
 			<div class="bg-white rounded-lg p-10">
 				<h1 class="text-xl mb-4 m-0">
 					Parâmetros da simulação
-					<tui-icon tuiHintDirection="right" tuiTooltip="Para atualizar os resultados utilizando novos parâmetros, clique em 'Calcular'"/>
+					<tui-icon tuiHintDirection="right" tuiTooltip="Para atualizar os resultados utilizando novos parâmetros, clique novamente em 'Calcular'"/>
 				</h1>
 
 				<div class="flex flex-col gap-1">

@@ -166,6 +166,7 @@ export class CalculadoraComponent implements OnInit {
 			} else {
 				s.aprovado = true;
 			}
+			this.result = this.resultado();
 			return;
 
 		} else {
