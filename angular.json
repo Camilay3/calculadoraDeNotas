@@ -17,8 +17,8 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-			"outputPath": "dist/calculadora-de-notas",
-			"index": "src/index.html",
+            "outputPath": "dist/calculadora-de-notas",
+            "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
               "zone.js"
@@ -32,10 +32,10 @@
               }
             ],
             "styles": [
-				"@taiga-ui/core/styles/taiga-ui-theme.less",
-	            "@taiga-ui/core/styles/taiga-ui-fonts.less",
-				"src/styles.css"
-			]
+              "@taiga-ui/core/styles/taiga-ui-theme.less",
+              "@taiga-ui/core/styles/taiga-ui-fonts.less",
+              "src/styles.css"
+            ]
           },
           "configurations": {
             "production": {
@@ -77,14 +77,9 @@
           "builder": "@angular/build:extract-i18n"
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular-builders/jest:run",
           "options": {
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
             "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
