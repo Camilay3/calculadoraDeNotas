@@ -119,7 +119,6 @@ export class CalculadoraComponent implements OnInit {
 
 	resultado(): IResultado {
 		const s = this.state;
-		// if (s.nota == null) return null;
 
 		if (this.isAFSelected) {
 			if (s.af.precisa! > 7) return { titulo: `Infelizmente você não tem direito a AF por ter uma média (${s.nota!.toFixed(1)}) menor que 3` };
@@ -157,7 +156,7 @@ export class CalculadoraComponent implements OnInit {
 		s.mediaN1 = p1 + p2;
 
 		if (this.isAFSelected) {
-			s.mediaN2 = (p3! + p4!) / 2;
+			s.mediaN2 = (p3 + p4) / 2;
 			s.mediaFinal = (s.mediaN1 + 3 * s.mediaN2) / 5;
 			s.nota = s.mediaFinal;
 
@@ -175,29 +174,45 @@ export class CalculadoraComponent implements OnInit {
 		}
 
 		const formula = ((media * 5) - s.mediaN1) / 3;
-		s.nota = this.isQuartaProvaSelected ? (formula * 2) - p3! : formula;
+		s.nota = this.isQuartaProvaSelected ? (formula * 2) - p3 : formula - p3;
 
 		if (s.nota <= 0) {
-			s.mediaN2 = p3!/2;
+			s.mediaN2 = p3/2;
 			s.mediaFinal = (s.mediaN1 + 3 * s.mediaN2) / 5;
 			s.aprovado = true;
-		}
-		if (s.nota > 10) this.calcularMediaSimulada(s.mediaN1, p3!);
+
+		} else if (s.nota > 10) this.calcularMediaSimulada(s.mediaN1, p3);
 		this.result = this.resultado();
 	}
 
 	aplicarPontos() {
 		const [b1, b2, b3, b4] = this.pointsArray.value;
+		let p1 = this.notaForm.value.primeiraNota as number;
+		let p2 = this.notaForm.value.segundaNota as number;
+		let p3 = this.notaForm.value.terceiraNota ?? 0;
+		let p4 = this.notaForm.value.quartaNota ?? 0;
 
-		let p1 = this.notaForm.value.primeiraNota!;
-		let p2 = this.notaForm.value.segundaNota!;
-		let p3 = this.notaForm.value.terceiraNota;
-		let p4 = this.notaForm.value.quartaNota;
+		const addMenor = (a: number, b: number): [number, number] =>
+			(a > b) ? [a, Math.min(b + 1, 10)] : [Math.min(a + 1, 10), b];
 
-		if (b1) (p1 > p2 ? p2++ : p1++);
-		if (b2 && p3 != null) (p4 != null ? (p3 > p4 ? p4++ : p3++) : p3++);
-		if (b3) { p1++; p2++; }
-		if (b4 && p3 != null) p3 += 2;
+		const aplicarMenor = (a: number, b: number, limite = 20): [number, number] =>
+			(a + b <= limite) ? addMenor(a, b) : [a, b];
+
+		const aplicarMedia = (a: number, b: number): [number, number] =>
+			[Math.min(a+1, 10), Math.min(b+1, 10)];
+
+		/* Pontuações */
+		if (b1) [p1, p2] = aplicarMenor(p1, p2); // Um ponto na menor nota da N1
+		if (b3) [p1, p2] = aplicarMedia(p1, p2); // Um ponto na média da N1
+
+		if (this.isAFSelected) {
+			if (b2) [p3, p4] = aplicarMenor(p3, p4); // Um ponto na menor nota da N2
+			if (b4) [p3, p4] = aplicarMedia(p3, p4); // Um ponto na média da N2
+
+		} else {
+			if (b2) p3 = Math.min(p3 + 1, 10);
+			if (b4) p3 = Math.min(p3 + 2, 10);
+		}
 
 		return { p1, p2, p3, p4 };
 	}
@@ -246,7 +261,9 @@ export class CalculadoraComponent implements OnInit {
 
 		if (!this.isQuartaProvaSelected && !this.isAFSelected) {
 			terceira.clearValidators();
+			terceira.reset();
 			quarta.clearValidators();
+			quarta.reset();
 			media.setValue(this.medias[0], { emitEvent: false });
 
 		} else {
