@@ -1,5 +1,5 @@
-<main class="flex justify-center py-8 w-[80%] gap-8 m-auto">
-	<form tuiForm tuiFormSize="l" [formGroup]="notaForm" (ngSubmit)="calcularNota()" class="bg-white rounded-lg p-10 w-full max-w-2xl">
+<main class="flex justify-center py-8 w-[80%] gap-8 m-auto flex-col lg:flex-row items-center lg:items-start">
+	<form tuiForm tuiFormSize="l" [formGroup]="notaForm" (ngSubmit)="calcularNota()" class="bg-white rounded-lg p-10 w-full lg:max-w-[55%] box-border">
 		<header tuiHeader="l">
 			<h1 tuiTitle>
 				Simulador
@@ -86,56 +86,44 @@
 				</div>
 			</div>
 
-			<div class="flex gap-4">
-				<div class="w-full bg-white rounded-lg p-10">
+			<div class="flex gap-4 flex-wrap">
+				<div class="min-w-[80px] flex-1 bg-white rounded-lg p-10">
 					<span class="text-sm">Média N1</span>
 					<h1 class="text-2xl m-0 {{ getClassColor(state.mediaN1!/2) }}">{{ (state.mediaN1!/2).toFixed(1) }}</h1>
 				</div>
 
-				<div class="w-full bg-white rounded-lg p-10">
+				<div class="min-w-[80px] flex-1 bg-white rounded-lg p-10">
 					<span class="text-sm">Média N2</span>
 					<h1 class="text-2xl m-0 {{ getClassColor(state.mediaN2 ?? -1) }}">{{ (state.mediaN2)?.toFixed(1) ?? '??' }}</h1>
 				</div>
 
-				<div class="w-full bg-white rounded-lg p-10">
+				<div class="min-w-[80px] flex-1 bg-white rounded-lg p-10">
 					<span class="text-sm">Média Final</span>
 					<h1 class="text-2xl m-0 {{ getClassColor(state.mediaFinal ?? -1) }}">{{ (state.mediaFinal)?.toFixed(1) ?? '??' }}</h1>
 				</div>
+			</div>
 
-				<!-- @if (state.mediaN2 || state.mediaN2 == 0) {
-					<div class="w-full bg-white rounded-lg p-10">
-						<span class="text-sm">Média N2</span>
-						<h1 class="text-2xl m-0 {{ getClassColor(state.mediaN2) }}">{{ (state.mediaN2).toFixed(1) }}</h1>
-					</div>
-
-					<div class="w-full bg-white rounded-lg p-10">
-						<span class="text-sm">Média Final</span>
-						<h1 class="text-2xl m-0 {{ getClassColor(state.mediaFinal!) }}">{{ (state.mediaFinal!).toFixed(1) }}</h1>
-					</div>
-					} -->
+			<div class="bg-white rounded-lg p-10 flex flex-col">
+				<div class="results flex justify-between">
+					<h1 class="text-xl mb-4 m-0">Resultados detalhados</h1>
+					<span class="font-bold w-fit h-fit rounded-lg px-2 py-1 {{ getStateColor(state.aprovado) }}">{{ getState(state.aprovado) }}</span>
 				</div>
+				{{result.titulo}}
 
-				<div class="bg-white rounded-lg p-10 flex flex-col">
-					<div class="results flex justify-between">
-						<h1 class="text-xl mb-4 m-0">Resultados detalhados</h1>
-						<span class="font-bold w-fit h-fit rounded-lg px-2 py-1 {{ getStateColor(state.aprovado) }}">{{ getState(state.aprovado) }}</span>
-					</div>
-					{{result.titulo}}
-
-					@if (result.detalhe) {
-						<ul>
-							@for (item of result.detalhe; track $index) {
-								@if (item.length) {
-									<li>{{ item }}</li>
-								}
+				@if (result.detalhe) {
+					<ul>
+						@for (item of result.detalhe; track $index) {
+							@if (item.length) {
+								<li>{{ item }}</li>
 							}
-						</ul>
-					}
-				</div>
+						}
+					</ul>
+				}
+			</div>
 
-				<a class="text-xs text-neutral-600 px-1 ml-auto" href="https://github.com/Camilay3/calculadoraDeNotas/issues/new" target="_blank" rel="noopener noreferrer">Encontrou um problema?</a>
-			</section>
-		}
-	</main>
+			<a class="text-xs text-neutral-600 px-1 ml-auto" href="https://github.com/Camilay3/calculadoraDeNotas/issues/new" target="_blank" rel="noopener noreferrer">Encontrou um problema?</a>
+		</section>
+	}
+</main>
 
 <!-- <button tuiButton appearance="action-grayscale" iconStart="@tui.cog" routerLink="/configurar">Configurações</button> -->
