@@ -1,0 +1,36 @@
+name: Build and Deploy GH Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Build produção
+        run: |
+          npx ng build --configuration production \
+          --base-href "https://camilay3.github.io/calculadoraDeNotas/"
+
+      - name: Deploy no GitHub Pages
+        run: |
+          npx angular-cli-ghpages \
+          --dir=dist/calculadora-de-notas/browser \
+          --no-silent
