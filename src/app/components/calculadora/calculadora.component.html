@@ -75,7 +75,7 @@
 	@if (result) {
 		<section class="flex flex-col w-full gap-4">
 			<div class="bg-white rounded-lg p-10">
-				<h1 class="text-xl mb-4 m-0">
+				<h1 class="text-xl mb-2 m-0">
 					Parâmetros da simulação
 					<tui-icon tuiHintDirection="right" tuiTooltip="Para atualizar os resultados utilizando novos parâmetros, clique novamente em 'Calcular'"/>
 				</h1>
@@ -83,6 +83,21 @@
 				<div class="flex flex-col gap-1">
 					<p class="text-sm m-0"><b>Média considerada:</b> {{ state.media }}</p>
 					<p class="text-sm m-0"><b>Tipo de cálculo:</b> {{ provaLabel }}</p>
+
+					<h1 class="text-xl mt-8">
+						Fórmula considerada
+						<tui-icon tuiHintDirection="right" tuiTooltip="Fórmula comumente utilizada nos Institutos Federais"/>
+					</h1>
+
+					<div class="text-lg flex items-center w-fit m-auto gap-4">
+						<div class="formula flex flex-col items-center">
+							<p class="m-0">(<b>2</b> × Média N1) + (<b>3</b> × Média N2)</p>
+							<span class="flex bg-neutral-500 h-[2px] w-full"></span>
+							<p class="m-0 font-bold">5</p>
+						</div>
+						<p>=</p>
+						<p class="font-bold">{{ state.media }}</p>
+					</div>
 				</div>
 			</div>
 
