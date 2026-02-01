@@ -128,9 +128,7 @@
 				@if (result.detalhe) {
 					<ul>
 						@for (item of result.detalhe; track $index) {
-							@if (item.length) {
-								<li>{{ item }}</li>
-							}
+							@if (item.length) { <li>{{ item }}</li> }
 						}
 					</ul>
 				}
