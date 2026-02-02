@@ -29,6 +29,11 @@ jobs:
           npx ng build --configuration production \
           --base-href "https://camilay3.github.io/calculadoraDeNotas/"
 
+      - name: Configurar usuário Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Deploy no GitHub Pages
         run: |
           npx angular-cli-ghpages \
