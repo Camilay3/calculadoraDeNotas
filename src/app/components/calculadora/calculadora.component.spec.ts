@@ -86,8 +86,6 @@ describe('CalculadoraComponent', () => {
 			expect(component.resultado().titulo).toContain(response);
 		});
 
-
-
 		it.each([
 			{ value: 10, status: true, response: `Parabéns, você não precisa de mais pontos por ter média suficiente` },
 			{ value: 8, status: false, response: `Você precisa de` },
@@ -98,6 +96,53 @@ describe('CalculadoraComponent', () => {
 			component.state.aprovado = status;
 			component.state.nota = value;
 			expect(component.resultado().titulo).toContain(response);
+		});
+	});
+
+	describe('calcularNota', () => {
+		let spyAplicarPontos: jest.SpyInstance<{ p1: number; p2: number; p3: number; p4: number }, [], any>;
+		let spyMediaSimulada: jest.SpyInstance<void, [mediaN1: number, terceiraNota?: number | undefined], any>;
+		let spyIsAFSelected: jest.SpyInstance<boolean>;
+
+		beforeEach(() => {
+			spyAplicarPontos = jest.spyOn(component, 'aplicarPontos').mockReturnValue({ p1: 0, p2: 0, p3: 0, p4: 0 });
+			spyIsAFSelected = jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(false);
+			spyMediaSimulada = jest.spyOn(component, 'calcularMediaSimulada');
+			component.notaForm.patchValue({ mediaEsperada: component.medias[0] });
+		})
+
+		it('should call aplicarPontos and resultado', () => {
+			let spyResultado = jest.spyOn(component, 'resultado');
+			component.calcularNota();
+			expect(spyAplicarPontos).toHaveBeenCalled();
+			expect(spyResultado).toHaveBeenCalled();
+		})
+
+		it('should call calcularMediaSimulada when nota > 10', () => {
+			jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(true);
+
+			spyAplicarPontos.mockReturnValue({ p1: 4, p2: 4, p3: 5, p4: 0 });
+			component.calcularNota();
+			expect(spyMediaSimulada).toHaveBeenCalled();
+		});
+
+		it('should return correct values when isAFSelected', () => {
+			spyIsAFSelected.mockReturnValue(true);
+
+			component.calcularNota();
+			expect(spyMediaSimulada).not.toHaveBeenCalled();
+
+			spyAplicarPontos.mockReturnValue({ p1: 10, p2: 10, p3: 10, p4: 10 });
+			component.calcularNota();
+			expect(component.state.aprovado).toBeTruthy();
+		});
+
+		it('should return correct values when is approved', () => {
+			spyAplicarPontos.mockReturnValue({ p1: 10, p2: 10, p3: 10, p4: 10 });
+
+			component.calcularNota();
+			expect(spyMediaSimulada).not.toHaveBeenCalled();
+			expect(component.state.aprovado).toBeTruthy();
 		});
 	});
 
