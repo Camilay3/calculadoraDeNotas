@@ -73,7 +73,37 @@ describe('CalculadoraComponent', () => {
 		expect(component.getState(false)).toBe('Prova Final');
 	});
 
+	describe('resultado', () => {
+		it.each([
+			{ value: 8, nota: 2, response: `Infelizmente você não tem direito a AF por ter uma média` },
+			{ value: 5, nota: null, response: `Você precisa de` },
+			{ value: null, nota: null, response: `Parabéns, você foi aprovado!` },
+
+		])('should return "$response" for value $value when has isAFSelected', ({ value, nota, response }) => {
+			jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(true);
+			component.state.af = { precisa: value } as any;
+			component.state.nota = nota;
+			expect(component.resultado().titulo).toContain(response);
+		});
+
+
+
+		it.each([
+			{ value: 10, status: true, response: `Parabéns, você não precisa de mais pontos por ter média suficiente` },
+			{ value: 8, status: false, response: `Você precisa de` },
+			{ value: 12, status: false, response: `Você já está de AF.` },
+
+		])('should return "$response" for value $value', ({ value, status, response }) => {
+			jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(false);
+			component.state.aprovado = status;
+			component.state.nota = value;
+			expect(component.resultado().titulo).toContain(response);
+		});
+	});
+
 	describe('formulário', () => {
+		// Testar inicialização do formulário e envio de valores corretos e incorretos
+
 		describe('pointsArray', () => {
 			it('should have points form array', () => {
 				expect(component.pointsArray).toBeDefined();
