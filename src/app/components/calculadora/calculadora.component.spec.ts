@@ -146,8 +146,34 @@ describe('CalculadoraComponent', () => {
 		});
 	});
 
+	describe('aplicarPontos', () => {
+		it('should have points', () => {
+			component.aplicarPontos();
+			expect(component.pointsArray).toBeDefined();
+		})
+
+		it('should add point to the smaller grade when b1 > b2', () => {
+			component.notaForm.patchValue({
+				primeiraNota: 5,
+				segundaNota: 3,
+				terceiraNota: 0,
+				quartaNota: 0,
+			});
+
+			jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(false);
+			component.pointsArray.setValue([true, true, true, true]);
+			let { p2, p3 } = component.aplicarPontos();
+			expect(p2).toBe(5);
+			expect(p3).toBe(3);
+
+			jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(true);
+			let { p4 } = component.aplicarPontos();
+			expect(p4).toBe(1);
+		});
+	});
+
 	describe('formulário', () => {
-		// Testar inicialização do formulário e envio de valores corretos e incorretos
+		// Testar inicialização/envio do formulário e envio de valores corretos e incorretos
 
 		describe('pointsArray', () => {
 			it('should have points form array', () => {
@@ -178,6 +204,62 @@ describe('CalculadoraComponent', () => {
 				control.markAsTouched();
 				control.setValue(value);
 				expect(component.getErroTratado('primeiraNota')).toBe(response);
+			});
+		});
+
+		describe('updateValidators', () => {
+			it('should clear terceira and quarta validators when no AF and no quarta prova', () => {
+				jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(false);
+				jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(false);
+
+				component.notaForm.patchValue({
+					terceiraNota: 5,
+					quartaNota: 5,
+				});
+
+				component.updateValidators();
+				const { terceiraNota, quartaNota, mediaEsperada } = component.notaForm.controls;
+
+				expect(terceiraNota.validator).toBeNull();
+				expect(quartaNota.validator).toBeNull();
+
+				expect(terceiraNota.value).toBeNull();
+				expect(quartaNota.value).toBeNull();
+
+				expect(mediaEsperada.value).toEqual(component.medias[0]);
+				expect(component.state.nota).toBeNull();
+			});
+
+			it('should require terceira and quarta when AF is selected', () => {
+				jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(true);
+				jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(true);
+
+				component.updateValidators();
+				const { terceiraNota, quartaNota, mediaEsperada } = component.notaForm.controls;
+
+				terceiraNota.setValue(null);
+				quartaNota.setValue(null);
+
+				expect(terceiraNota.hasError('required')).toBe(true);
+				expect(quartaNota.hasError('required')).toBe(true);
+
+				expect(mediaEsperada.value).toBeNull();
+			});
+
+			it('should require terceira but not quarta when quarta prova selected without AF', () => {
+				jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(true);
+				jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(false);
+
+				component.updateValidators();
+				const { terceiraNota, quartaNota, mediaEsperada } = component.notaForm.controls;
+
+				terceiraNota.setValue(null);
+				quartaNota.setValue(null);
+
+				expect(terceiraNota.hasError('required')).toBe(true);
+				expect(quartaNota.hasError('required')).toBe(false);
+
+				expect(mediaEsperada.value).toEqual(component.medias[0]);
 			});
 		});
 	});
