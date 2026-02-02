@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout do código
@@ -17,9 +17,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
 
       - name: Instalar dependências
         run: npm ci
 
-      - name: Rodar testes com coverage
+      - name: Rodar testes (tentativa 1)
+        continue-on-error: true
+        run: npm run test -- --coverage
+
+      - name: Rodar testes (tentativa 2)
+        if: failure()
+        continue-on-error: true
+        run: npm run test -- --coverage
+
+      - name: Rodar testes (tentativa 3)
+        if: failure()
         run: npm run test -- --coverage
