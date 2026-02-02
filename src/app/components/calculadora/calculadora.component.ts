@@ -41,7 +41,7 @@ export class CalculadoraComponent implements OnInit {
 	provaLabel: string = 'Quarta prova';
 	result: IResultado | null = null;
 
-	protected readonly choices: Choice[] = [
+	readonly choices: Choice[] = [
 		{
 			name: 'Quarta prova',
 			description: 'Calcula quanto você precisará tirar na última prova. Será necessário fornecer a terceira nota',
@@ -56,14 +56,14 @@ export class CalculadoraComponent implements OnInit {
 		},
 	];
 
-	protected readonly points: string[] = [
+	readonly points: string[] = [
 		'Um ponto na menor nota da N1',
 		'Um ponto na menor nota da N2',
 		'Um ponto na média da N1',
 		'Um ponto na média da N2'
 	];
 
-	protected readonly medias: MediaOption[] = [
+	readonly medias: MediaOption[] = [
 		{ name: 'Padrão', description: 'Calcula a média como 7', media: 7 },
 		{ name: 'Conceito B', description: 'Calcula a média como 6', media: 6 },
 		{ name: 'Conceito C', description: 'Calcula a média como 5', media: 5 },
@@ -91,7 +91,7 @@ export class CalculadoraComponent implements OnInit {
 	}
 
 	getClassColor(nota: number): string {
-		nota = Number.parseInt(nota.toFixed(1));
+		nota = Number(nota.toFixed(1));
 
 		if (nota < 0) return 'text-neutral-500';
 		if (nota < 3) return 'text-red-500';
