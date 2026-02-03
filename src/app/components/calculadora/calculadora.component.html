@@ -112,7 +112,7 @@
 					<h1 class="flex items-center gap-2 text-2xl m-0 {{ getClassColor(state.mediaN2 ?? -1) }}">
 						{{ (state.mediaN2)?.toFixed(1) ?? '??' }}
 						@if (!state.mediaN2) {
-							<tui-icon tuiHintDirection="right" tuiTooltip="Dados insuficientes. Por favor, forneça mais notas"/>
+							<tui-icon data-testid="tooltipMedia" tuiHintDirection="right" tuiTooltip="Dados insuficientes. Por favor, forneça mais notas"/>
 						}
 					</h1>
 

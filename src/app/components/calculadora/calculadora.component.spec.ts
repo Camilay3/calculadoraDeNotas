@@ -74,6 +74,23 @@ describe('CalculadoraComponent', () => {
 	});
 
 	describe('resultado', () => {
+		it('should render tooltip when mediaN2 is null', () => {
+			jest.spyOn(component, 'aplicarPontos').mockReturnValue({ p1: 0, p2: 0, p3: 0, p4: 0 });
+			component.calcularNota();
+
+			const tooltip = fixture.nativeElement.querySelector('[data-testid="tooltipMedia"]');
+			expect(tooltip).toBeTruthy();
+		});
+
+		it('should render tooltip when has mediaN2', () => {
+			jest.spyOn(component, 'aplicarPontos').mockReturnValue({ p1: 10, p2: 10, p3: 10, p4: 0 });
+			component.calcularNota();
+
+			fixture.detectChanges();
+			const tooltip = fixture.nativeElement.querySelector('[data-testid="tooltipMedia"]');
+			expect(tooltip).not.toBeTruthy();
+		});
+
 		it.each([
 			{ value: 8, nota: 2, response: `Infelizmente você não tem direito a AF por ter uma média` },
 			{ value: 5, nota: null, response: `Você precisa de` },
