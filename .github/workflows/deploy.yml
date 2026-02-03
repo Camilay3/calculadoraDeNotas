@@ -20,6 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
 
       - name: Instalar dependências
         run: npm ci
@@ -38,4 +39,5 @@ jobs:
         run: |
           npx angular-cli-ghpages \
           --dir=dist/calculadora-de-notas/browser \
-          --no-silent
+          --no-silent \
+          --repo=https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
