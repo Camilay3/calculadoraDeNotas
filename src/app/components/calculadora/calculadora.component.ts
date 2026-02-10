@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators, FormsModule, FormArray, } from '@angular/forms';
 // import { RouterLink } from '@angular/router';
 
@@ -145,6 +145,15 @@ export class CalculadoraComponent implements OnInit {
 		};
 	}
 
+	@ViewChild('formularioSection') formularioSection?: ElementRef;
+	clear() {
+		this.result = null;
+		setTimeout(() => {
+			this.formularioSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}, 100);
+	}
+
+	@ViewChild('resultadoSection') resultadoSection?: ElementRef;
 	calcularNota() {
 		const { p1, p2, p3, p4 } = this.aplicarPontos();
 		const media = this.notaForm.value.mediaEsperada?.media ?? 7;
@@ -183,6 +192,10 @@ export class CalculadoraComponent implements OnInit {
 
 		} else if (s.nota > 10) this.calcularMediaSimulada(s.mediaN1, p3);
 		this.result = this.resultado();
+
+		setTimeout(() => {
+			this.resultadoSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}, 100);
 	}
 
 	aplicarPontos() {
