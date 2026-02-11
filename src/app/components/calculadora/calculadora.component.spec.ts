@@ -135,6 +135,18 @@ describe('CalculadoraComponent', () => {
 			expect(spyResultado).toHaveBeenCalled();
 		})
 
+		it('should scroll to results', () => {
+			jest.useFakeTimers();
+
+			const scrollMock = jest.fn();
+			component.calcularNota();
+			component.resultadoSection = { nativeElement: { scrollIntoView: scrollMock } } as any;
+			jest.advanceTimersByTime(100);
+			expect(scrollMock).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+
+			jest.useRealTimers();
+		});
+
 		it('should call calcularMediaSimulada when nota > 10', () => {
 			jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(true);
 
@@ -278,6 +290,21 @@ describe('CalculadoraComponent', () => {
 
 				expect(mediaEsperada.value).toEqual(component.medias[0]);
 			});
+		});
+
+		it('clear() should null result and scroll to form', () => {
+			jest.useFakeTimers();
+
+			const scrollMock = jest.fn();
+			component.result = { titulo: 'teste' } as any;
+			component.formularioSection = { nativeElement: { scrollIntoView: scrollMock } } as any;
+
+			component.clear();
+			expect(component.result).toBeNull();
+			jest.advanceTimersByTime(100);
+			expect(scrollMock).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+
+			jest.useRealTimers();
 		});
 	});
 });
