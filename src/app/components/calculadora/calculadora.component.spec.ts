@@ -40,7 +40,7 @@ describe('CalculadoraComponent', () => {
 			{ nota: 7,  expected: 'text-green-500' },
 
 		])('should return "$expected" for value $nota', ({ nota, expected }) => {
-			component.state.mediaN1 = nota*2;
+			component.state.mediaN1 = nota;
 			fixture.detectChanges();
 			const h1: HTMLElement = fixture.nativeElement.querySelector('[data-testid="media-n1"]');
 
@@ -75,16 +75,27 @@ describe('CalculadoraComponent', () => {
 
 	describe('resultado', () => {
 		it('should render tooltip when mediaN2 is null', () => {
-			jest.spyOn(component, 'aplicarPontos').mockReturnValue({ p1: 0, p2: 0, p3: 0, p4: 0 });
+			jest.spyOn(component.state, 'aplicarPontos').mockImplementation(() => {
+				component.state.notas = { p1: 0, p2: 0, p3: 0, p4: 0 } as any;
+			});
 			component.calcularNota();
 
 			const tooltip = fixture.nativeElement.querySelector('[data-testid="tooltipMedia"]');
 			expect(tooltip).toBeTruthy();
 		});
 
-		it('should render tooltip when has mediaN2', () => {
-			jest.spyOn(component, 'aplicarPontos').mockReturnValue({ p1: 10, p2: 10, p3: 10, p4: 0 });
+		it('should not render tooltip when has mediaN2', () => {
+			component.notaForm.patchValue({
+				primeiraNota: 10,
+				segundaNota: 10,
+				terceiraNota: 10,
+				quartaNota: 0,
+			});
+			jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(false);
 			component.calcularNota();
+
+			let mediaN2 = component.state.mediaN2;
+			expect(mediaN2).toBe(5);
 
 			fixture.detectChanges();
 			const tooltip = fixture.nativeElement.querySelector('[data-testid="tooltipMedia"]');
@@ -117,18 +128,18 @@ describe('CalculadoraComponent', () => {
 	});
 
 	describe('calcularNota', () => {
-		let spyAplicarPontos: jest.SpyInstance<{ p1: number; p2: number; p3: number; p4: number }, [], any>;
-		let spyMediaSimulada: jest.SpyInstance<void, [mediaN1: number, terceiraNota?: number | undefined], any>;
+		let spyMediaSimulada: jest.SpyInstance<void, [isQuartaProvaSelected: boolean], any>;
 		let spyIsAFSelected: jest.SpyInstance<boolean>;
 
 		beforeEach(() => {
-			spyAplicarPontos = jest.spyOn(component, 'aplicarPontos').mockReturnValue({ p1: 0, p2: 0, p3: 0, p4: 0 });
+			component.notaForm.patchValue({ primeiraNota: 0, segundaNota: 0, terceiraNota: 0, quartaNota: 0 });
 			spyIsAFSelected = jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(false);
-			spyMediaSimulada = jest.spyOn(component, 'calcularMediaSimulada');
+			spyMediaSimulada = jest.spyOn(component.state, 'calcularMediaSimulada');
 			component.notaForm.patchValue({ mediaEsperada: component.medias[0] });
 		})
 
 		it('should call aplicarPontos and resultado', () => {
+			let spyAplicarPontos = jest.spyOn(component.state, 'aplicarPontos');
 			let spyResultado = jest.spyOn(component, 'resultado');
 			component.calcularNota();
 			expect(spyAplicarPontos).toHaveBeenCalled();
@@ -150,7 +161,7 @@ describe('CalculadoraComponent', () => {
 		it('should call calcularMediaSimulada when nota > 10', () => {
 			jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(true);
 
-			spyAplicarPontos.mockReturnValue({ p1: 4, p2: 4, p3: 5, p4: 0 });
+			component.notaForm.patchValue({ primeiraNota: 4, segundaNota: 4, terceiraNota: 5, quartaNota: 0 });
 			component.calcularNota();
 			expect(spyMediaSimulada).toHaveBeenCalled();
 		});
@@ -161,13 +172,13 @@ describe('CalculadoraComponent', () => {
 			component.calcularNota();
 			expect(spyMediaSimulada).not.toHaveBeenCalled();
 
-			spyAplicarPontos.mockReturnValue({ p1: 10, p2: 10, p3: 10, p4: 10 });
+			component.notaForm.patchValue({ primeiraNota: 10, segundaNota: 10, terceiraNota: 10, quartaNota: 10 });
 			component.calcularNota();
 			expect(component.state.aprovado).toBeTruthy();
 		});
 
 		it('should return correct values when is approved', () => {
-			spyAplicarPontos.mockReturnValue({ p1: 10, p2: 10, p3: 10, p4: 10 });
+			component.notaForm.patchValue({ primeiraNota: 10, segundaNota: 10, terceiraNota: 10, quartaNota: 10 });
 
 			component.calcularNota();
 			expect(spyMediaSimulada).not.toHaveBeenCalled();
@@ -177,27 +188,36 @@ describe('CalculadoraComponent', () => {
 
 	describe('aplicarPontos', () => {
 		it('should have points', () => {
-			component.aplicarPontos();
+			component.state.aplicarPontos(component.pointsArray.value, component.isAFSelected);
 			expect(component.pointsArray).toBeDefined();
 		})
 
 		it('should add point to the smaller grade when b1 > b2', () => {
-			component.notaForm.patchValue({
-				primeiraNota: 5,
-				segundaNota: 3,
-				terceiraNota: 0,
-				quartaNota: 0,
-			});
-
 			jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(false);
 			component.pointsArray.setValue([true, true, true, true]);
-			let { p2, p3 } = component.aplicarPontos();
+			component.state.atribuirNotas([5, 3, 0, 0]);
+			component.state.aplicarPontos(component.pointsArray.value, component.isAFSelected);
+			let p1 = component.state.notas.p1;
+			let p2 = component.state.notas.p2;
+			let p3 = component.state.notas.p3;
+			let p4 = component.state.notas.p4;
+			expect(p1).toBe(6);
 			expect(p2).toBe(5);
 			expect(p3).toBe(3);
+			expect(p4).toBe(0);
+		});
 
+		it('should add point to the smaller grade when b3 = b4', () => {
 			jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(true);
-			let { p4 } = component.aplicarPontos();
+			component.pointsArray.setValue([true, true, true, true]);
+			component.state.atribuirNotas([5, 3, 0, 0]);
+			component.state.aplicarPontos(component.pointsArray.value, component.isAFSelected);
+			let p3 = component.state.notas.p3;
+			let p4 = component.state.notas.p4;
+			expect(p3).toBe(2);
 			expect(p4).toBe(1);
+			let mediaN2 = component.state.mediaN2;
+			expect(mediaN2).toBe(1.5);
 		});
 	});
 

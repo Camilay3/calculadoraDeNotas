@@ -32,17 +32,22 @@ export class State {
 		const n = this.notas;
 		this.calcularMedias();
 
-		const addMenor = (a: number, b: number): [number, number] => (a > b) ? [a, ponto(b)] : [ponto(a), b];
-		const aplicarMenor = (a: number, b: number): [number, number] => (a + b <= 20) ? addMenor(a, b) : [a, b];
 		const ponto = (x: number, qnt: number = 1): number => Math.min(x + qnt, 10);
+		const aplicarMenor = (a: number, b: number): [number, number] => (a > b) ? [a, ponto(b)] : [ponto(a), b];
 
 		/* Pontuações */
 		if (b1) [n.p1, n.p2] = aplicarMenor(n.p1, n.p2); // Um ponto na menor nota da N1
-		if (b3) this.mediaN1 = ponto(this.mediaN1); // Um ponto na média da N1
+		if (b3) {
+			n.p1 = ponto(n.p1);
+			n.p2 = ponto(n.p2);
+		}
 
 		if (isAFSelected) {
 			if (b2) [n.p3, n.p4] = aplicarMenor(n.p3, n.p4); // Um ponto na menor nota da N2
-			if (b4) this.mediaN2 = ponto(this.mediaN2!); // Um ponto na média da N2
+			if (b4) {
+				n.p3 = ponto(n.p3);
+				n.p4 = ponto(n.p4);
+			}
 
 		} else {
 			if (b2) n.p3 = ponto(n.p3);
