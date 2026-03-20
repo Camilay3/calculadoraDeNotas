@@ -1,6 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators, FormsModule, FormArray, } from '@angular/forms';
-// import { RouterLink } from '@angular/router';
 
 import { TuiButton, TuiLabel, TuiTextfield, TuiTitle, TuiError, TuiHint, TuiIcon } from '@taiga-ui/core';
 import { TuiCheckbox, TuiInputNumber, TuiRadio, TuiRadioList, TuiTooltip } from '@taiga-ui/kit';
@@ -14,10 +13,8 @@ import { State } from '../../classes/State';
 	standalone: true,
 	imports: [
 		ReactiveFormsModule, FormsModule, TuiForm, TuiHeader, TuiError, TuiButton, TuiHint, TuiLabel, TuiTextfield, TuiTitle, TuiInputNumber, TuiRadio, TuiRadioList, TuiCheckbox, TuiIcon, TuiTooltip,
-		// RouterLink,
 	],
 	templateUrl: './calculadora.component.html',
-	// styleUrl: './calculadora.component.scss',
 })
 export class CalculadoraComponent implements OnInit {
 	state: State = new State();
@@ -73,9 +70,11 @@ export class CalculadoraComponent implements OnInit {
 			});
 	}
 
-	getClassColor(nota: number): string {
-		nota = Number(nota.toFixed(1));
+	get pointsArray() { return this.notaForm.controls.points as FormArray<FormControl<boolean>>; }
+	get isQuartaProvaSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'Quarta prova'; }
+	get isAFSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'AF'; }
 
+	getClassColor(nota: number): string {
 		if (nota < 0) return 'text-neutral-500';
 		if (nota < 3) return 'text-red-500';
 		if (nota < 7) return 'text-yellow-500';
@@ -96,34 +95,44 @@ export class CalculadoraComponent implements OnInit {
 		return null;
 	}
 
-	get pointsArray() { return this.notaForm.controls.points as FormArray<FormControl<boolean>>; }
-	get isQuartaProvaSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'Quarta prova'; }
-	get isAFSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'AF'; }
+	arredondarNota(n: number | null): number | null { return (n == null) ? null : Math.ceil(n * 10) / 10 }
+	arredondarCampos(obj: any, chaves: string[]) {
+		chaves.forEach(key => {
+			const valor = obj[key];
+			if (typeof valor === 'number' || valor === null) {
+				obj[key] = this.arredondarNota(valor);
+			}
+		});
+	}
 
 	resultado(): IResultado {
 		const s = this.state;
 
+		this.arredondarCampos(s.af, ['precisa', 'max', 'min', 'mediaMin']);
+    	this.arredondarCampos(s, ['nota', 'mediaN2', 'mediaFinal']);
+		s.mediaN1 = this.arredondarNota(s.mediaN1) ?? 0;
+
 		if (this.isAFSelected) {
-			if (s.af.precisa! > 7) return { titulo: `Infelizmente você não tem direito a AF por ter uma média (${s.nota!.toFixed(1)}) menor que 3` };
+			if (s.af.precisa! > 7) return { titulo: `Infelizmente você não tem direito a AF por ter uma média (${s.nota}) menor que 3` };
 
 			return s.af.precisa
-				? { titulo: `Você precisa de ${s.af.precisa.toFixed(1)} na AF!` }
+				? { titulo: `Você precisa de ${s.af.precisa} na AF!` }
 				: { titulo: `Parabéns, você foi aprovado!` };
 		}
 
 		if (s.aprovado) return { titulo: `Parabéns, você não precisa de mais pontos por ter média suficiente!` };
-		if (s.nota! <= 10) return { titulo: `Você precisa de ${s.nota!.toFixed(1)} na ${this.provaLabel}` };
+		if (s.nota! <= 10) return { titulo: `Você precisa de ${s.nota} na ${this.provaLabel}` };
 
 		return {
 			titulo: `Você já está de AF. Análises da ${this.provaLabel}:`,
 			detalhe: [
-				`Ao tirar 10, precisará de ${s.af.max?.toFixed(1)} na AF.`,
+				`Ao tirar 10, precisará de ${s.af.max} na AF.`,
 
 				s.af.isMin
-					? `Ao zerar, precisará de ${s.af.min?.toFixed(1)} na AF.`
-					: `Ao zerar, não terá direito a AF por ter uma média (${s.af.mediaMin?.toFixed(1)}) menor que 3.`,
+					? `Ao zerar, precisará de ${s.af.min} na AF.`
+					: `Ao zerar, não terá direito a AF por ter uma média (${s.af.mediaMin}) menor que 3.`,
 
-				s.af.precisa ? `Ao tirar ${s.af.precisa.toFixed(1)} terá direito a AF.` : '',
+				s.af.precisa ? `Ao tirar ${s.af.precisa} terá direito a AF.` : '',
 			]
 		};
 	}
