@@ -75,9 +75,10 @@ export class CalculadoraComponent implements OnInit {
 	get isAFSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'AF'; }
 
 	getClassColor(nota: number): string {
+		if (this.isAFSelected) this.state.media = 7;
 		if (nota < 0) return 'text-neutral-500';
 		if (nota < 3) return 'text-red-500';
-		if (nota < 7) return 'text-yellow-500';
+		if (nota < this.state.media) return 'text-yellow-500';
 		return 'text-green-500';
 	}
 
@@ -109,8 +110,7 @@ export class CalculadoraComponent implements OnInit {
 		const s = this.state;
 
 		this.arredondarCampos(s.af, ['precisa', 'max', 'min', 'mediaMin']);
-    	this.arredondarCampos(s, ['nota', 'mediaN2', 'mediaFinal']);
-		s.mediaN1 = this.arredondarNota(s.mediaN1) ?? 0;
+    	this.arredondarCampos(s, ['nota', 'mediaN1', 'mediaN2', 'mediaFinal']);
 
 		if (this.isAFSelected) {
 			if (s.af.precisa! > 7) return { titulo: `Infelizmente você não tem direito a AF por ter uma média (${s.nota}) menor que 3` };
