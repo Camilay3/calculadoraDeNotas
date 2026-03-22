@@ -27,31 +27,41 @@ export class State {
 		this.atribuido = true;
 	}
 
+	calcularMedias() {
+		const n = this.notas;
+		this.mediaN1 = (n.p1 + n.p2) / 2;
+		this.mediaN2 = (n.p3 + n.p4) / 2;
+	}
+
+	distribuirMedia(n1: number, n2: number): [number, number] {
+		let notaMaior = Math.max(n2, n1);
+		let notaMenor = Math.min(n2, n1);
+
+		const podeReceber = Math.min(1, 10 - notaMaior);
+		notaMaior = this.ponto(notaMaior, podeReceber);
+		notaMenor = this.ponto(notaMenor, (2 - podeReceber));
+
+		return [notaMaior, notaMenor];
+	}
+
+	ponto = (x: number, qnt: number = 1): number => Math.min(x + qnt, 10);
+	aplicarMenor = (a: number, b: number): [number, number] => (a > b) ? [a, this.ponto(b)] : [this.ponto(a), b];
+
 	aplicarPontos(points: boolean[], isAFSelected: boolean) {
 		const [b1, b2, b3, b4] = points;
 		const n = this.notas;
-		this.calcularMedias();
-
-		const ponto = (x: number, qnt: number = 1): number => Math.min(x + qnt, 10);
-		const aplicarMenor = (a: number, b: number): [number, number] => (a > b) ? [a, ponto(b)] : [ponto(a), b];
 
 		/* Pontuações */
-		if (b1) [n.p1, n.p2] = aplicarMenor(n.p1, n.p2); // Um ponto na menor nota da N1
-		if (b3) {
-			n.p1 = ponto(n.p1);
-			n.p2 = ponto(n.p2);
-		}
+		if (b1) [n.p1, n.p2] = this.aplicarMenor(n.p1, n.p2); // Um ponto na menor nota da N1
+		if (b3) [n.p1, n.p2] = this.distribuirMedia(n.p1, n.p2); // Um ponto na média da N1
 
 		if (isAFSelected) {
-			if (b2) [n.p3, n.p4] = aplicarMenor(n.p3, n.p4); // Um ponto na menor nota da N2
-			if (b4) {
-				n.p3 = ponto(n.p3);
-				n.p4 = ponto(n.p4);
-			}
+			if (b2) [n.p3, n.p4] = this.aplicarMenor(n.p3, n.p4); // Um ponto na menor nota da N2
+			if (b4) [n.p3, n.p4] = this.distribuirMedia(n.p3, n.p4); // Um ponto na média da N2
 
 		} else {
-			if (b2) n.p3 = ponto(n.p3);
-			if (b4) n.p3 = ponto(n.p3, 2);
+			if (b2) n.p3 = this.ponto(n.p3);
+			if (b4) n.p3 = this.ponto(n.p3, 2);
 		}
 
 		this.calcularMedias();
@@ -79,11 +89,5 @@ export class State {
 				? (((15 - aux) / 3) * 2) - this.notas.p3
 				: (15 - aux) / 3;
 		}
-	}
-
-	calcularMedias() {
-		const n = this.notas;
-		this.mediaN1 = (n.p1 + n.p2) / 2;
-		this.mediaN2 = (n.p3 + n.p4) / 2;
 	}
 }

@@ -100,9 +100,7 @@ export class CalculadoraComponent implements OnInit {
 	arredondarCampos(obj: any, chaves: string[]) {
 		chaves.forEach(key => {
 			const valor = obj[key];
-			if (typeof valor === 'number' || valor === null) {
-				obj[key] = this.arredondarNota(valor);
-			}
+			if (typeof valor === 'number' || valor === null) obj[key] = this.arredondarNota(valor);
 		});
 	}
 
