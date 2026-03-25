@@ -19,6 +19,13 @@ export interface IAF {
 	isMin: boolean,
 }
 
+export interface INotas {
+	p1: number,
+	p2: number,
+	p3: number,
+	p4: number,
+}
+
 export interface IResultado {
 	titulo: string,
 	detalhe?: string[],

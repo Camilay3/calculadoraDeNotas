@@ -1,40 +1,20 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators, FormsModule, FormArray, } from '@angular/forms';
-// import { RouterLink } from '@angular/router';
 
 import { TuiButton, TuiLabel, TuiTextfield, TuiTitle, TuiError, TuiHint, TuiIcon } from '@taiga-ui/core';
 import { TuiCheckbox, TuiInputNumber, TuiRadio, TuiRadioList, TuiTooltip } from '@taiga-ui/kit';
 import { TuiForm, TuiHeader } from '@taiga-ui/layout';
 import { startWith } from 'rxjs';
-import { IAF, Choice, MediaOption, IResultado } from '../../interfaces/interfaces';
-
-class State {
-	media: number = 7;
-	nota: number | null = null;
-	mediaN1: number | null = null;;
-	mediaN2: number | null = null;
-	mediaFinal: number | null = null;
-	aprovado: boolean = false;
-	af: IAF = {
-		max: null,
-		min: null,
-		mediaMax: null,
-		mediaMin: null,
-		precisa: null,
-		isMax: false,
-		isMin: false,
-	}
-}
+import { Choice, MediaOption, IResultado } from '../../interfaces/interfaces';
+import { State } from '../../classes/State';
 
 @Component({
 	selector: 'app-calculadora',
 	standalone: true,
 	imports: [
 		ReactiveFormsModule, FormsModule, TuiForm, TuiHeader, TuiError, TuiButton, TuiHint, TuiLabel, TuiTextfield, TuiTitle, TuiInputNumber, TuiRadio, TuiRadioList, TuiCheckbox, TuiIcon, TuiTooltip,
-		// RouterLink,
 	],
 	templateUrl: './calculadora.component.html',
-	// styleUrl: './calculadora.component.scss',
 })
 export class CalculadoraComponent implements OnInit {
 	state: State = new State();
@@ -90,12 +70,15 @@ export class CalculadoraComponent implements OnInit {
 			});
 	}
 
-	getClassColor(nota: number): string {
-		nota = Number(nota.toFixed(1));
+	get pointsArray() { return this.notaForm.controls.points as FormArray<FormControl<boolean>>; }
+	get isQuartaProvaSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'Quarta prova'; }
+	get isAFSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'AF'; }
 
+	getClassColor(nota: number): string {
+		if (this.isAFSelected) this.state.media = 7;
 		if (nota < 0) return 'text-neutral-500';
 		if (nota < 3) return 'text-red-500';
-		if (nota < 7) return 'text-yellow-500';
+		if (nota < this.state.media) return 'text-yellow-500';
 		return 'text-green-500';
 	}
 
@@ -113,34 +96,41 @@ export class CalculadoraComponent implements OnInit {
 		return null;
 	}
 
-	get pointsArray() { return this.notaForm.controls.points as FormArray<FormControl<boolean>>; }
-	get isQuartaProvaSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'Quarta prova'; }
-	get isAFSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'AF'; }
+	arredondarNota(n: number | null): number | null { return (n == null) ? null : Math.ceil(n * 10) / 10 }
+	arredondarCampos(obj: any, chaves: string[]) {
+		chaves.forEach(key => {
+			const valor = obj[key];
+			if (typeof valor === 'number' || valor === null) obj[key] = this.arredondarNota(valor);
+		});
+	}
 
 	resultado(): IResultado {
 		const s = this.state;
 
+		this.arredondarCampos(s.af, ['precisa', 'max', 'min', 'mediaMin']);
+    	this.arredondarCampos(s, ['nota', 'mediaN1', 'mediaN2', 'mediaFinal']);
+
 		if (this.isAFSelected) {
-			if (s.af.precisa! > 7) return { titulo: `Infelizmente você não tem direito a AF por ter uma média (${s.nota!.toFixed(1)}) menor que 3` };
+			if (s.af.precisa! > 7) return { titulo: `Infelizmente você não tem direito a AF por ter uma média (${s.nota}) menor que 3` };
 
 			return s.af.precisa
-				? { titulo: `Você precisa de ${s.af.precisa.toFixed(1)} na AF!` }
+				? { titulo: `Você precisa de ${s.af.precisa} na AF!` }
 				: { titulo: `Parabéns, você foi aprovado!` };
 		}
 
 		if (s.aprovado) return { titulo: `Parabéns, você não precisa de mais pontos por ter média suficiente!` };
-		if (s.nota! <= 10) return { titulo: `Você precisa de ${s.nota!.toFixed(1)} na ${this.provaLabel}` };
+		if (s.nota! <= 10) return { titulo: `Você precisa de ${s.nota} na ${this.provaLabel}` };
 
 		return {
 			titulo: `Você já está de AF. Análises da ${this.provaLabel}:`,
 			detalhe: [
-				`Ao tirar 10, precisará de ${s.af.max?.toFixed(1)} na AF.`,
+				`Ao tirar 10, precisará de ${s.af.max} na AF.`,
 
 				s.af.isMin
-					? `Ao zerar, precisará de ${s.af.min?.toFixed(1)} na AF.`
-					: `Ao zerar, não terá direito a AF por ter uma média (${s.af.mediaMin?.toFixed(1)}) menor que 3.`,
+					? `Ao zerar, precisará de ${s.af.min} na AF.`
+					: `Ao zerar, não terá direito a AF por ter uma média (${s.af.mediaMin}) menor que 3.`,
 
-				s.af.precisa ? `Ao tirar ${s.af.precisa.toFixed(1)} terá direito a AF.` : '',
+				s.af.precisa ? `Ao tirar ${s.af.precisa} terá direito a AF.` : '',
 			]
 		};
 	}
@@ -148,28 +138,30 @@ export class CalculadoraComponent implements OnInit {
 	@ViewChild('formularioSection') formularioSection?: ElementRef;
 	clear() {
 		this.result = null;
-		setTimeout(() => {
-			this.formularioSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-		}, 100);
+		setTimeout(() => { this.formularioSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, 100);
 	}
 
 	@ViewChild('resultadoSection') resultadoSection?: ElementRef;
 	calcularNota() {
-		const { p1, p2, p3, p4 } = this.aplicarPontos();
-		const media = this.notaForm.value.mediaEsperada?.media ?? 7;
+		const notaForm = this.notaForm.value;
+		this.state.atribuirNotas([
+			notaForm.primeiraNota as number,
+			notaForm.segundaNota as number,
+			notaForm.terceiraNota as number,
+			notaForm.quartaNota as number,
+		]);
+		(this.state.atribuido) ? this.state.aplicarPontos(this.pointsArray.value, this.isAFSelected) : console.error('Erro ao tentar aplicar pontos sem haver notas cadastradas');
+
 		const s = this.state;
 		s.aprovado = false;
 		s.af.precisa = null;
-
-		s.media = media;
-		s.mediaN1 = p1 + p2;
+		s.media = this.notaForm.value.mediaEsperada?.media ?? 7;
 
 		if (this.isAFSelected) {
-			s.mediaN2 = (p3 + p4) / 2;
-			s.mediaFinal = (s.mediaN1 + 3 * s.mediaN2) / 5;
+			s.mediaFinal = (2 * s.mediaN1 + 3 * s.mediaN2!) / 5;
 			s.nota = s.mediaFinal;
 
-			if (s.mediaFinal < media) {
+			if (s.mediaFinal < s.media) {
 				s.af.precisa = 10 - s.mediaFinal;
 			} else {
 				s.aprovado = true;
@@ -182,76 +174,20 @@ export class CalculadoraComponent implements OnInit {
 			s.mediaFinal = null;
 		}
 
-		const formula = ((media * 5) - s.mediaN1) / 3;
-		s.nota = this.isQuartaProvaSelected ? (formula * 2) - p3 : formula - p3;
+		const formula = ((s.media * 5) - 2 * s.mediaN1) / 3;
+		s.nota = this.isQuartaProvaSelected ? (formula * 2) - s.notas.p3 : formula - s.notas.p3;
 
 		if (s.nota <= 0) {
-			s.mediaN2 = p3/2;
-			s.mediaFinal = (s.mediaN1 + 3 * s.mediaN2) / 5;
+			s.calcularMedias();
+			s.mediaFinal = (2 * s.mediaN1 + 3 * s.mediaN2!) / 5;
 			s.aprovado = true;
 
-		} else if (s.nota > 10) this.calcularMediaSimulada(s.mediaN1, p3);
+		} else if (s.nota > 10) s.calcularMediaSimulada(this.isQuartaProvaSelected);
 		this.result = this.resultado();
 
 		setTimeout(() => {
 			this.resultadoSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		}, 100);
-	}
-
-	aplicarPontos() {
-		const [b1, b2, b3, b4] = this.pointsArray.value;
-		let p1 = this.notaForm.value.primeiraNota as number;
-		let p2 = this.notaForm.value.segundaNota as number;
-		let p3 = this.notaForm.value.terceiraNota ?? 0;
-		let p4 = this.notaForm.value.quartaNota ?? 0;
-
-		const addMenor = (a: number, b: number): [number, number] =>
-			(a > b) ? [a, Math.min(b + 1, 10)] : [Math.min(a + 1, 10), b];
-
-		const aplicarMenor = (a: number, b: number, limite = 20): [number, number] =>
-			(a + b <= limite) ? addMenor(a, b) : [a, b];
-
-		const aplicarMedia = (a: number, b: number): [number, number] =>
-			[Math.min(a+1, 10), Math.min(b+1, 10)];
-
-		/* Pontuações */
-		if (b1) [p1, p2] = aplicarMenor(p1, p2); // Um ponto na menor nota da N1
-		if (b3) [p1, p2] = aplicarMedia(p1, p2); // Um ponto na média da N1
-
-		if (this.isAFSelected) {
-			if (b2) [p3, p4] = aplicarMenor(p3, p4); // Um ponto na menor nota da N2
-			if (b4) [p3, p4] = aplicarMedia(p3, p4); // Um ponto na média da N2
-
-		} else {
-			if (b2) p3 = Math.min(p3 + 1, 10);
-			if (b4) p3 = Math.min(p3 + 2, 10);
-		}
-
-		return { p1, p2, p3, p4 };
-	}
-
-	calcularMediaSimulada(mediaN1: number, terceiraNota?: number) {
-		const s = this.state;
-
-		s.af.mediaMax = this.isQuartaProvaSelected
-			? (mediaN1 + (((terceiraNota! + 10) / 2) * 3)) / 5
-			: (mediaN1 + 30) / 5;
-
-		s.af.isMax = s.af.mediaMax >= 3;
-		if (s.af.isMax) s.af.max = 10 - s.af.mediaMax;
-
-		s.af.mediaMin = this.isQuartaProvaSelected
-			? (mediaN1 + ((terceiraNota! / 2) * 3)) / 5
-			: mediaN1 / 5;
-
-		s.af.isMin = s.af.mediaMin >= 3;
-		if (s.af.isMin) {
-			s.af.min = 10 - s.af.mediaMin;
-		} else {
-			s.af.precisa = this.isQuartaProvaSelected
-				? (((15 - mediaN1) / 3) * 2) - terceiraNota!
-				: (15 - mediaN1) / 3;
-		}
 	}
 
 	getErroTratado(formControlName: string): string | null {

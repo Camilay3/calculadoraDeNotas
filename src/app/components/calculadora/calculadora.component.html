@@ -113,14 +113,14 @@
 			<div class="flex gap-4 flex-wrap">
 				<div class="min-w-[80px] flex-1 bg-white rounded-lg p-10">
 					<span class="text-sm">Média N1</span>
-					<h1 data-testid="media-n1" class="text-2xl m-0 {{ getClassColor(state.mediaN1!/2) }}">{{ (state.mediaN1!/2).toFixed(1) }}</h1>
+					<h1 data-testid="media-n1" class="text-2xl m-0 {{ getClassColor(state.mediaN1) }}">{{ state.mediaN1 }}</h1>
 				</div>
 
 				<div class="min-w-[80px] flex-1 bg-white rounded-lg p-10">
 					<span class="text-sm">Média N2</span>
 					<h1 class="flex items-center gap-2 text-2xl m-0 {{ getClassColor(state.mediaN2 ?? -1) }}">
-						{{ (state.mediaN2)?.toFixed(1) ?? '??' }}
-						@if (!state.mediaN2) {
+						{{ state.mediaN2 ?? '??' }}
+						@if (!state.mediaN2 && state.mediaN2 != 0) {
 							<tui-icon data-testid="tooltipMedia" tuiHintDirection="right" tuiTooltip="Dados insuficientes. Por favor, forneça mais notas"/>
 						}
 					</h1>
@@ -130,8 +130,8 @@
 				<div class="min-w-[80px] flex-1 bg-white rounded-lg p-10">
 					<span class="text-sm">Média Final</span>
 					<h1 class="flex items-center gap-2 text-2xl m-0 {{ getClassColor(state.mediaFinal ?? -1) }}">
-						{{ (state.mediaFinal)?.toFixed(1) ?? '??' }}
-						@if (!state.mediaN2) {
+						{{ state.mediaFinal ?? '??' }}
+						@if (!state.mediaN2  && state.mediaN2 != 0) {
 							<tui-icon tuiHintDirection="right" tuiTooltip="Dados insuficientes. Por favor, forneça mais notas"/>
 						}
 					</h1>
