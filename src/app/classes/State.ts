@@ -47,7 +47,7 @@ export class State {
 	ponto = (x: number, qnt: number = 1): number => Math.min(x + qnt, 10);
 	aplicarMenor = (a: number, b: number): [number, number] => (a > b) ? [a, this.ponto(b)] : [this.ponto(a), b];
 
-	aplicarPontos(points: boolean[], isAFSelected: boolean) {
+	aplicarPontos(points: boolean[]) {
 		const [b1, b2, b3, b4] = points;
 		const n = this.notas;
 
@@ -55,14 +55,8 @@ export class State {
 		if (b1) [n.p1, n.p2] = this.aplicarMenor(n.p1, n.p2); // Um ponto na menor nota da N1
 		if (b3) [n.p1, n.p2] = this.distribuirMedia(n.p1, n.p2); // Um ponto na média da N1
 
-		if (isAFSelected) {
-			if (b2) [n.p3, n.p4] = this.aplicarMenor(n.p3, n.p4); // Um ponto na menor nota da N2
-			if (b4) [n.p3, n.p4] = this.distribuirMedia(n.p3, n.p4); // Um ponto na média da N2
-
-		} else {
-			if (b2) n.p3 = this.ponto(n.p3);
-			if (b4) n.p3 = this.ponto(n.p3, 2);
-		}
+		if (b2) [n.p3, n.p4] = this.aplicarMenor(n.p3, n.p4); // Um ponto na menor nota da N2
+		if (b4) [n.p3, n.p4] = this.distribuirMedia(n.p3, n.p4); // Um ponto na média da N2
 
 		this.calcularMedias();
 	}

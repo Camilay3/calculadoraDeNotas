@@ -150,7 +150,7 @@ export class CalculadoraComponent implements OnInit {
 			notaForm.terceiraNota as number,
 			notaForm.quartaNota as number,
 		]);
-		(this.state.atribuido) ? this.state.aplicarPontos(this.pointsArray.value, this.isAFSelected) : console.error('Erro ao tentar aplicar pontos sem haver notas cadastradas');
+		(this.state.atribuido) ? this.state.aplicarPontos(this.pointsArray.value) : console.error('Erro ao tentar aplicar pontos sem haver notas cadastradas');
 
 		const s = this.state;
 		s.aprovado = false;
@@ -174,8 +174,9 @@ export class CalculadoraComponent implements OnInit {
 			s.mediaFinal = null;
 		}
 
-		const formula = ((s.media * 5) - 2 * s.mediaN1) / 3;
-		s.nota = this.isQuartaProvaSelected ? (formula * 2) - s.notas.p3 : formula - s.notas.p3;
+		let formula = ((s.media * 5) - 2 * s.mediaN1) / 3;
+		formula *= this.isQuartaProvaSelected ? 2 : 1;
+		s.nota = formula - s.notas.p3 - s.notas.p4;
 
 		if (s.nota <= 0) {
 			s.calcularMedias();
