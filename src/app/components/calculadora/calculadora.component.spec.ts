@@ -47,6 +47,12 @@ describe('CalculadoraComponent', () => {
 			expect(component.getClassColor(nota)).toBe(expected);
 			expect(h1.classList).toContain(expected);
 		});
+
+		it('should define media 7 when isAFSelected', () => {
+			jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(true);
+			component.getClassColor(5);
+			expect(component.state.media).toBe(7);
+		});
 	});
 
 	it('should return correct getStateColor for different values', () => {
@@ -138,6 +144,28 @@ describe('CalculadoraComponent', () => {
 			component.notaForm.patchValue({ mediaEsperada: component.medias[0] });
 		})
 
+		describe('calcularMediaSimulada', () => {
+			it('should call calcularMediaSimulada when nota > 10', () => {
+				jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(true);
+
+				component.notaForm.patchValue({ primeiraNota: 4, segundaNota: 4, terceiraNota: 5, quartaNota: 0 });
+				component.calcularNota();
+				expect(spyMediaSimulada).toHaveBeenCalled();
+			});
+
+			it('should use simple calculations when isQuartaProvaSelected is false', () => {
+				jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(false);
+
+				component.notaForm.patchValue({ primeiraNota: 0, segundaNota: 0, terceiraNota: 0, quartaNota: 0 });
+				component.calcularNota();
+				const aux = component.state.mediaN1 * 2;
+
+				expect(component.state.af.mediaMax).toBeCloseTo((aux + 30) / 5);
+				expect(component.state.af.mediaMin).toBeCloseTo(aux / 5);
+				expect(component.state.af.precisa).toBeCloseTo((15 - aux) / 3);
+			});
+		});
+
 		it('should call aplicarPontos and resultado', () => {
 			let spyAplicarPontos = jest.spyOn(component.state, 'aplicarPontos');
 			let spyResultado = jest.spyOn(component, 'resultado');
@@ -156,14 +184,6 @@ describe('CalculadoraComponent', () => {
 			expect(scrollMock).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
 
 			jest.useRealTimers();
-		});
-
-		it('should call calcularMediaSimulada when nota > 10', () => {
-			jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(true);
-
-			component.notaForm.patchValue({ primeiraNota: 4, segundaNota: 4, terceiraNota: 5, quartaNota: 0 });
-			component.calcularNota();
-			expect(spyMediaSimulada).toHaveBeenCalled();
 		});
 
 		it('should return correct values when isAFSelected', () => {
