@@ -162,7 +162,7 @@ export class CalculadoraComponent implements OnInit {
 		if (this.isAFSelected) {
 			s.nota = s.mediaFinal ?? 0;
 
-			if (s.nota < s.media) {
+			if (s.nota < s.media-0.05) {
 				s.af.precisa = 10 - s.nota;
 			} else {
 				s.aprovado = true;
@@ -174,13 +174,13 @@ export class CalculadoraComponent implements OnInit {
 		const precisaN2 = ((s.media * 5) - 2 * s.mediaN1) / 3;
 		s.nota = (this.isQuartaProvaSelected) ? (2*precisaN2 - s.notas.p3 - s.notas.p4) : (precisaN2 - s.mediaN2!);
 
-		if (s.nota <= 0) {
-			if (s.mediaFinal! >= s.media) s.aprovado = true;
+		if (s.nota < 0.05) {
+			if (s.mediaFinal! >= s.media-0.05) s.aprovado = true;
 			this.result = this.resultado();
 			return;
-		}
-		else if (s.nota > 10) s.calcularMediaSimulada(this.isQuartaProvaSelected);
-		else if (s.nota > 0 && s.nota < 0.1) s.nota = 0.1;
+
+		} else if (s.nota > 10) s.calcularMediaSimulada(this.isQuartaProvaSelected);
+
 		s.mediaN2 = null;
 		s.mediaFinal = null;
 		this.result = this.resultado();
