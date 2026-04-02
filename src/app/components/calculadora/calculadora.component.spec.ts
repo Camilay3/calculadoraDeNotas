@@ -188,7 +188,7 @@ describe('CalculadoraComponent', () => {
 
 	describe('aplicarPontos', () => {
 		it('should have points', () => {
-			component.state.aplicarPontos(component.pointsArray.value, component.isAFSelected);
+			component.state.aplicarPontos(component.pointsArray.value);
 			expect(component.pointsArray).toBeDefined();
 		})
 
@@ -196,22 +196,22 @@ describe('CalculadoraComponent', () => {
 			jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(false);
 			component.pointsArray.setValue([true, true, true, true]);
 			component.state.atribuirNotas([5, 3, 0, 0]);
-			component.state.aplicarPontos(component.pointsArray.value, component.isAFSelected);
+			component.state.aplicarPontos(component.pointsArray.value);
 			let p1 = component.state.notas.p1;
 			let p2 = component.state.notas.p2;
 			let p3 = component.state.notas.p3;
 			let p4 = component.state.notas.p4;
 			expect(p1).toBe(6);
 			expect(p2).toBe(5);
-			expect(p3).toBe(3);
-			expect(p4).toBe(0);
+			expect(p3).toBe(2);
+			expect(p4).toBe(1);
 		});
 
 		it('should add point to the smaller grade when b3 = b4', () => {
 			jest.spyOn(component, 'isAFSelected', 'get').mockReturnValue(true);
 			component.pointsArray.setValue([true, true, true, true]);
 			component.state.atribuirNotas([5, 3, 0, 0]);
-			component.state.aplicarPontos(component.pointsArray.value, component.isAFSelected);
+			component.state.aplicarPontos(component.pointsArray.value);
 			let p3 = component.state.notas.p3;
 			let p4 = component.state.notas.p4;
 			expect(p3).toBe(2);

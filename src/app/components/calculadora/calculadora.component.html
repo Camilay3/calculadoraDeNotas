@@ -131,7 +131,7 @@
 					<span class="text-sm">Média Final</span>
 					<h1 class="flex items-center gap-2 text-2xl m-0 {{ getClassColor(state.mediaFinal ?? -1) }}">
 						{{ state.mediaFinal ?? '??' }}
-						@if (!state.mediaN2  && state.mediaN2 != 0) {
+						@if (!state.mediaN2 && state.mediaN2 != 0) {
 							<tui-icon tuiHintDirection="right" tuiTooltip="Dados insuficientes. Por favor, forneça mais notas"/>
 						}
 					</h1>

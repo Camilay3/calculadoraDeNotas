@@ -143,6 +143,10 @@ export class CalculadoraComponent implements OnInit {
 
 	@ViewChild('resultadoSection') resultadoSection?: ElementRef;
 	calcularNota() {
+		const s = this.state;
+		s.media = this.notaForm.value.mediaEsperada?.media ?? 7;
+		s.resetarEstado();
+
 		const notaForm = this.notaForm.value;
 		this.state.atribuirNotas([
 			notaForm.primeiraNota as number,
@@ -151,11 +155,6 @@ export class CalculadoraComponent implements OnInit {
 			notaForm.quartaNota as number,
 		]);
 		(this.state.atribuido) ? this.state.aplicarPontos(this.pointsArray.value) : console.error('Erro ao tentar aplicar pontos sem haver notas cadastradas');
-
-		const s = this.state;
-		s.aprovado = false;
-		s.af.precisa = null;
-		s.media = this.notaForm.value.mediaEsperada?.media ?? 7;
 
 		if (this.isAFSelected) {
 			s.mediaFinal = (2 * s.mediaN1 + 3 * s.mediaN2!) / 5;
@@ -168,20 +167,17 @@ export class CalculadoraComponent implements OnInit {
 			}
 			this.result = this.resultado();
 			return;
-
-		} else {
-			s.mediaN2 = null;
-			s.mediaFinal = null;
 		}
 
 		let formula = ((s.media * 5) - 2 * s.mediaN1) / 3;
 		formula *= this.isQuartaProvaSelected ? 2 : 1;
-		s.nota = formula - s.notas.p3 - s.notas.p4;
+		s.nota = formula - s.mediaN2!;
+		s.mediaN2 = null;
 
 		if (s.nota <= 0) {
 			s.calcularMedias();
 			s.mediaFinal = (2 * s.mediaN1 + 3 * s.mediaN2!) / 5;
-			s.aprovado = true;
+			if (s.mediaFinal >= s.media) s.aprovado = true;
 
 		} else if (s.nota > 10) s.calcularMediaSimulada(this.isQuartaProvaSelected);
 		this.result = this.resultado();

@@ -19,6 +19,14 @@ export class State {
 	notas: INotas = { p1: 0, p2: 0, p3: 0, p4: 0 };
 	atribuido: boolean = false;
 
+	resetarEstado() {
+		this.aprovado = false;
+		this.atribuido = false;
+		this.af.precisa = null;
+		this.mediaN2 = null;
+		this.mediaFinal = null;
+	}
+
 	atribuirNotas(notes: number[]) {
 		this.notas.p1 = notes[0] ?? 0;
 		this.notas.p2 = notes[1] ?? 0;
