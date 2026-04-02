@@ -39,6 +39,7 @@ export class State {
 		const n = this.notas;
 		this.mediaN1 = (n.p1 + n.p2) / 2;
 		this.mediaN2 = (n.p3 + n.p4) / 2;
+		this.mediaFinal = (2 * this.mediaN1 + 3 * this.mediaN2) / 5;
 	}
 
 	distribuirMedia(n1: number, n2: number): [number, number] {

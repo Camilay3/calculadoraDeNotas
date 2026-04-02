@@ -96,7 +96,7 @@ export class CalculadoraComponent implements OnInit {
 		return null;
 	}
 
-	arredondarNota(n: number | null): number | null { return (n == null) ? null : Math.ceil(n * 10) / 10 }
+	arredondarNota(n: number | null): number | null { return (n == null) ? null : Math.round((n + Number.EPSILON) * 10) / 10; }
 	arredondarCampos(obj: any, chaves: string[]) {
 		chaves.forEach(key => {
 			const valor = obj[key];
@@ -104,9 +104,13 @@ export class CalculadoraComponent implements OnInit {
 		});
 	}
 
+	@ViewChild('resultadoSection') resultadoSection?: ElementRef;
 	resultado(): IResultado {
-		const s = this.state;
+		setTimeout(() => {
+			this.resultadoSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}, 100);
 
+		const s = this.state;
 		this.arredondarCampos(s.af, ['precisa', 'max', 'min', 'mediaMin']);
     	this.arredondarCampos(s, ['nota', 'mediaN1', 'mediaN2', 'mediaFinal']);
 
@@ -141,7 +145,6 @@ export class CalculadoraComponent implements OnInit {
 		setTimeout(() => { this.formularioSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, 100);
 	}
 
-	@ViewChild('resultadoSection') resultadoSection?: ElementRef;
 	calcularNota() {
 		const s = this.state;
 		s.media = this.notaForm.value.mediaEsperada?.media ?? 7;
@@ -157,11 +160,10 @@ export class CalculadoraComponent implements OnInit {
 		(this.state.atribuido) ? this.state.aplicarPontos(this.pointsArray.value) : console.error('Erro ao tentar aplicar pontos sem haver notas cadastradas');
 
 		if (this.isAFSelected) {
-			s.mediaFinal = (2 * s.mediaN1 + 3 * s.mediaN2!) / 5;
-			s.nota = s.mediaFinal;
+			s.nota = s.mediaFinal ?? 0;
 
-			if (s.mediaFinal < s.media) {
-				s.af.precisa = 10 - s.mediaFinal;
+			if (s.nota < s.media) {
+				s.af.precisa = 10 - s.nota;
 			} else {
 				s.aprovado = true;
 			}
@@ -169,22 +171,19 @@ export class CalculadoraComponent implements OnInit {
 			return;
 		}
 
-		let formula = ((s.media * 5) - 2 * s.mediaN1) / 3;
-		formula *= this.isQuartaProvaSelected ? 2 : 1;
-		s.nota = formula - s.mediaN2!;
-		s.mediaN2 = null;
+		const precisaN2 = ((s.media * 5) - 2 * s.mediaN1) / 3;
+		s.nota = (this.isQuartaProvaSelected) ? (2*precisaN2 - s.notas.p3 - s.notas.p4) : (precisaN2 - s.mediaN2!);
 
 		if (s.nota <= 0) {
-			s.calcularMedias();
-			s.mediaFinal = (2 * s.mediaN1 + 3 * s.mediaN2!) / 5;
-			if (s.mediaFinal >= s.media) s.aprovado = true;
-
-		} else if (s.nota > 10) s.calcularMediaSimulada(this.isQuartaProvaSelected);
+			if (s.mediaFinal! >= s.media) s.aprovado = true;
+			this.result = this.resultado();
+			return;
+		}
+		else if (s.nota > 10) s.calcularMediaSimulada(this.isQuartaProvaSelected);
+		else if (s.nota > 0 && s.nota < 0.1) s.nota = 0.1;
+		s.mediaN2 = null;
+		s.mediaFinal = null;
 		this.result = this.resultado();
-
-		setTimeout(() => {
-			this.resultadoSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-		}, 100);
 	}
 
 	getErroTratado(formControlName: string): string | null {
