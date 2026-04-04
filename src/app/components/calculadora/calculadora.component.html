@@ -140,7 +140,10 @@
 
 			<div class="bg-white rounded-lg p-10 flex flex-col">
 				<div class="results flex justify-between">
-					<h1 class="text-xl mb-4 m-0">Resultados detalhados</h1>
+					<h1 class="text-xl mb-4 m-0">
+						Resultados detalhados
+						<tui-icon tuiHintDirection="right" tuiTooltip="A aproximação utilizada tenta seguir ao máximo o qAcadêmico, mas não garante total fidelidade"/>
+					</h1>
 					<span class="font-bold w-fit h-fit rounded-lg px-2 py-1 {{ getStateColor(state.aprovado) }}">{{ getState(state.aprovado) }}</span>
 				</div>
 				{{result.titulo}}
