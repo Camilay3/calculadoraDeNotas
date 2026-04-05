@@ -96,7 +96,7 @@ export class CalculadoraComponent implements OnInit {
 		return null;
 	}
 
-	arredondarNota(n: number | null): number | null { return (n == null) ? null : Math.ceil(n * 10) / 10 }
+	arredondarNota(n: number | null): number | null { return (n == null) ? null : Math.round((n + Number.EPSILON) * 10) / 10; }
 	arredondarCampos(obj: any, chaves: string[]) {
 		chaves.forEach(key => {
 			const valor = obj[key];
@@ -104,9 +104,13 @@ export class CalculadoraComponent implements OnInit {
 		});
 	}
 
+	@ViewChild('resultadoSection') resultadoSection?: ElementRef;
 	resultado(): IResultado {
-		const s = this.state;
+		setTimeout(() => {
+			this.resultadoSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}, 100);
 
+		const s = this.state;
 		this.arredondarCampos(s.af, ['precisa', 'max', 'min', 'mediaMin']);
     	this.arredondarCampos(s, ['nota', 'mediaN1', 'mediaN2', 'mediaFinal']);
 
@@ -141,8 +145,11 @@ export class CalculadoraComponent implements OnInit {
 		setTimeout(() => { this.formularioSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, 100);
 	}
 
-	@ViewChild('resultadoSection') resultadoSection?: ElementRef;
 	calcularNota() {
+		const s = this.state;
+		s.media = this.notaForm.value.mediaEsperada?.media ?? 7;
+		s.resetarEstado();
+
 		const notaForm = this.notaForm.value;
 		this.state.atribuirNotas([
 			notaForm.primeiraNota as number,
@@ -150,44 +157,33 @@ export class CalculadoraComponent implements OnInit {
 			notaForm.terceiraNota as number,
 			notaForm.quartaNota as number,
 		]);
-		(this.state.atribuido) ? this.state.aplicarPontos(this.pointsArray.value, this.isAFSelected) : console.error('Erro ao tentar aplicar pontos sem haver notas cadastradas');
-
-		const s = this.state;
-		s.aprovado = false;
-		s.af.precisa = null;
-		s.media = this.notaForm.value.mediaEsperada?.media ?? 7;
+		(this.state.atribuido) ? this.state.aplicarPontos(this.pointsArray.value) : console.error('Erro ao tentar aplicar pontos sem haver notas cadastradas');
 
 		if (this.isAFSelected) {
-			s.mediaFinal = (2 * s.mediaN1 + 3 * s.mediaN2!) / 5;
-			s.nota = s.mediaFinal;
+			s.nota = s.mediaFinal ?? 0;
 
-			if (s.mediaFinal < s.media) {
-				s.af.precisa = 10 - s.mediaFinal;
+			if (s.nota < s.media-0.05) {
+				s.af.precisa = 10 - s.nota;
 			} else {
 				s.aprovado = true;
 			}
 			this.result = this.resultado();
 			return;
-
-		} else {
-			s.mediaN2 = null;
-			s.mediaFinal = null;
 		}
 
-		const formula = ((s.media * 5) - 2 * s.mediaN1) / 3;
-		s.nota = this.isQuartaProvaSelected ? (formula * 2) - s.notas.p3 : formula - s.notas.p3;
+		const precisaN2 = ((s.media * 5) - 2 * s.mediaN1) / 3;
+		s.nota = (this.isQuartaProvaSelected) ? (2*precisaN2 - s.notas.p3 - s.notas.p4) : (precisaN2 - s.mediaN2!);
 
-		if (s.nota <= 0) {
-			s.calcularMedias();
-			s.mediaFinal = (2 * s.mediaN1 + 3 * s.mediaN2!) / 5;
-			s.aprovado = true;
+		if (s.nota < 0.05) {
+			if (s.mediaFinal! >= s.media-0.05) s.aprovado = true;
+			this.result = this.resultado();
+			return;
 
 		} else if (s.nota > 10) s.calcularMediaSimulada(this.isQuartaProvaSelected);
-		this.result = this.resultado();
 
-		setTimeout(() => {
-			this.resultadoSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-		}, 100);
+		s.mediaN2 = null;
+		s.mediaFinal = null;
+		this.result = this.resultado();
 	}
 
 	getErroTratado(formControlName: string): string | null {

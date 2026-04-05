@@ -19,6 +19,14 @@ export class State {
 	notas: INotas = { p1: 0, p2: 0, p3: 0, p4: 0 };
 	atribuido: boolean = false;
 
+	resetarEstado() {
+		this.aprovado = false;
+		this.atribuido = false;
+		this.af.precisa = null;
+		this.mediaN2 = null;
+		this.mediaFinal = null;
+	}
+
 	atribuirNotas(notes: number[]) {
 		this.notas.p1 = notes[0] ?? 0;
 		this.notas.p2 = notes[1] ?? 0;
@@ -31,6 +39,7 @@ export class State {
 		const n = this.notas;
 		this.mediaN1 = (n.p1 + n.p2) / 2;
 		this.mediaN2 = (n.p3 + n.p4) / 2;
+		this.mediaFinal = (2 * this.mediaN1 + 3 * this.mediaN2) / 5;
 	}
 
 	distribuirMedia(n1: number, n2: number): [number, number] {
@@ -47,7 +56,7 @@ export class State {
 	ponto = (x: number, qnt: number = 1): number => Math.min(x + qnt, 10);
 	aplicarMenor = (a: number, b: number): [number, number] => (a > b) ? [a, this.ponto(b)] : [this.ponto(a), b];
 
-	aplicarPontos(points: boolean[], isAFSelected: boolean) {
+	aplicarPontos(points: boolean[]) {
 		const [b1, b2, b3, b4] = points;
 		const n = this.notas;
 
@@ -55,14 +64,8 @@ export class State {
 		if (b1) [n.p1, n.p2] = this.aplicarMenor(n.p1, n.p2); // Um ponto na menor nota da N1
 		if (b3) [n.p1, n.p2] = this.distribuirMedia(n.p1, n.p2); // Um ponto na média da N1
 
-		if (isAFSelected) {
-			if (b2) [n.p3, n.p4] = this.aplicarMenor(n.p3, n.p4); // Um ponto na menor nota da N2
-			if (b4) [n.p3, n.p4] = this.distribuirMedia(n.p3, n.p4); // Um ponto na média da N2
-
-		} else {
-			if (b2) n.p3 = this.ponto(n.p3);
-			if (b4) n.p3 = this.ponto(n.p3, 2);
-		}
+		if (b2) [n.p3, n.p4] = this.aplicarMenor(n.p3, n.p4); // Um ponto na menor nota da N2
+		if (b4) [n.p3, n.p4] = this.distribuirMedia(n.p3, n.p4); // Um ponto na média da N2
 
 		this.calcularMedias();
 	}
