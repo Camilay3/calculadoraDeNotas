@@ -18,6 +18,10 @@ import { State } from '../../classes/State';
 })
 export class CalculadoraComponent implements OnInit {
 	state: State = new State();
+	private lastSnapshotStr: string | null = null;
+	get needsRecalculate(): boolean {
+		return !!this.result && this.lastSnapshotStr !== JSON.stringify(this.notaForm.getRawValue());
+	}
 	provaLabel: string = 'Quarta prova';
 	result: IResultado | null = null;
 
@@ -168,6 +172,7 @@ export class CalculadoraComponent implements OnInit {
 				s.aprovado = true;
 			}
 			this.result = this.resultado();
+			this.lastSnapshotStr = JSON.stringify(this.notaForm.getRawValue());
 			return;
 		}
 
@@ -177,6 +182,7 @@ export class CalculadoraComponent implements OnInit {
 		if (s.nota < 0.05) {
 			if (s.mediaFinal! >= s.media-0.05) s.aprovado = true;
 			this.result = this.resultado();
+			this.lastSnapshotStr = JSON.stringify(this.notaForm.getRawValue());
 			return;
 
 		} else if (s.nota > 10) s.calcularMediaSimulada(this.isQuartaProvaSelected);
@@ -184,6 +190,7 @@ export class CalculadoraComponent implements OnInit {
 		s.mediaN2 = null;
 		s.mediaFinal = null;
 		this.result = this.resultado();
+		this.lastSnapshotStr = JSON.stringify(this.notaForm.getRawValue());
 	}
 
 	getErroTratado(formControlName: string): string | null {
