@@ -330,6 +330,16 @@ describe('CalculadoraComponent', () => {
 
 				expect(mediaEsperada.value).toEqual(component.medias[0]);
 			});
+
+			it('should clear quarta when switching from AF to quarta prova', () => {
+				component.notaForm.patchValue({
+					notaEsperada: component.choices[2],
+					quartaNota: 10,
+				});
+				component.notaForm.patchValue({ notaEsperada: component.choices[0] });
+
+				expect(component.notaForm.controls.quartaNota.value).toBeNull();
+			});
 		});
 
 		it('clear() should null result and scroll to form', () => {

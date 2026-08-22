@@ -219,6 +219,7 @@ export class CalculadoraComponent implements OnInit {
 				media.setValue(null, { emitEvent: false });
 			} else {
 				quarta.clearValidators();
+				quarta.reset();
 				media.setValue(this.medias[0], { emitEvent: false });
 			}
 		}
