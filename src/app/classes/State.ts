@@ -72,6 +72,7 @@ export class State {
 
 	calcularMediaSimulada(isQuartaProvaSelected: boolean) {
 		let aux = this.mediaN1 * 2;
+		const mediaN2Atual = (this.notas.p3 + this.notas.p4) / 2;
 		this.af.mediaMax = isQuartaProvaSelected
 			? (aux + (((this.notas.p3 + 10) / 2) * 3)) / 5
 			: (aux + 30) / 5;
@@ -79,9 +80,7 @@ export class State {
 		this.af.isMax = this.af.mediaMax >= 3;
 		if (this.af.isMax) this.af.max = 10 - this.af.mediaMax;
 
-		this.af.mediaMin = isQuartaProvaSelected
-			? (aux + ((this.notas.p3 / 2) * 3)) / 5
-			: aux / 5;
+		this.af.mediaMin = (aux + (mediaN2Atual * 3)) / 5;
 
 		this.af.isMin = this.af.mediaMin >= 3;
 		if (this.af.isMin) {
@@ -89,8 +88,8 @@ export class State {
 
 		} else {
 			this.af.precisa = isQuartaProvaSelected
-				? (((15 - aux) / 3) * 2) - this.notas.p3
-				: (15 - aux) / 3;
+				? (((15 - aux) / 3) * 2) - this.notas.p3 - this.notas.p4
+				: ((15 - aux) / 3) - mediaN2Atual;
 		}
 	}
 }

@@ -164,6 +164,26 @@ describe('CalculadoraComponent', () => {
 				expect(component.state.af.mediaMin).toBeCloseTo(aux / 5);
 				expect(component.state.af.precisa).toBeCloseTo((15 - aux) / 3);
 			});
+
+			it('should include N2 bonus when simulating AF for N2', () => {
+				jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(false);
+				component.pointsArray.setValue([false, false, false, true]);
+
+				component.calcularNota();
+
+				expect(component.state.af.mediaMin).toBe(0.6);
+				expect(component.state.af.precisa).toBe(4);
+			});
+
+			it('should include N2 bonus when simulating AF for quarta prova', () => {
+				jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(true);
+				component.pointsArray.setValue([false, false, false, true]);
+
+				component.calcularNota();
+
+				expect(component.state.af.mediaMin).toBe(0.6);
+				expect(component.state.af.precisa).toBe(8);
+			});
 		});
 
 		it('should call aplicarPontos and resultado', () => {
