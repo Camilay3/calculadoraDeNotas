@@ -224,6 +224,20 @@ describe('CalculadoraComponent', () => {
 			expect(spyMediaSimulada).not.toHaveBeenCalled();
 			expect(component.state.aprovado).toBeTruthy();
 		});
+
+		it('should keep N2 and quarta prova calculations consistent after rounding', () => {
+			component.notaForm.patchValue({
+				notaEsperada: component.choices[1],
+				primeiraNota: 2.44,
+				segundaNota: 2.44,
+			});
+			component.calcularNota();
+			expect(component.result?.titulo).toContain('Você precisa de 10 na N2');
+
+			component.notaForm.patchValue({ notaEsperada: component.choices[0], terceiraNota: 10 });
+			component.calcularNota();
+			expect(component.result?.titulo).toContain('Você precisa de 10 na Quarta prova');
+		});
 	});
 
 	describe('aplicarPontos', () => {

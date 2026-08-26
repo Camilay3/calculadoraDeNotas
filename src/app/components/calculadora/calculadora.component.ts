@@ -171,7 +171,7 @@ export class CalculadoraComponent implements OnInit {
 			return;
 		}
 
-		const precisaN2 = ((s.media * 5) - 2 * s.mediaN1) / 3;
+		const precisaN2 = this.arredondarNota(((s.media * 5) - 2 * s.mediaN1) / 3)!;
 		s.nota = (this.isQuartaProvaSelected) ? (2*precisaN2 - s.notas.p3 - s.notas.p4) : (precisaN2 - s.mediaN2!);
 
 		if (s.nota < 0.05) {
