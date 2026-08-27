@@ -184,6 +184,20 @@ describe('CalculadoraComponent', () => {
 				expect(component.state.af.mediaMin).toBe(0.6);
 				expect(component.state.af.precisa).toBe(8);
 			});
+
+			it.each([
+				{ nota: 7.4, mediaMin: 3, isMin: true, afMin: 7 },
+				{ nota: 7.3, mediaMin: 2.9, isMin: false, afMin: null },
+			])('should use rounded media when checking AF eligibility', ({ nota, mediaMin, isMin, afMin }) => {
+				jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(true);
+				component.notaForm.patchValue({ primeiraNota: nota, segundaNota: nota, terceiraNota: 0, quartaNota: 0 });
+
+				component.calcularNota();
+
+				expect(component.state.af.mediaMin).toBe(mediaMin);
+				expect(component.state.af.isMin).toBe(isMin);
+				expect(component.state.af.min).toBe(afMin);
+			});
 		});
 
 		it('should call aplicarPontos and resultado', () => {

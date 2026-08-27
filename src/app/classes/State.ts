@@ -77,14 +77,16 @@ export class State {
 			? (aux + (((this.notas.p3 + 10) / 2) * 3)) / 5
 			: (aux + 30) / 5;
 
-		this.af.isMax = this.af.mediaMax >= 3;
-		if (this.af.isMax) this.af.max = 10 - this.af.mediaMax;
+		const mediaMaxArredondada = Math.round((this.af.mediaMax + Number.EPSILON) * 10) / 10;
+		this.af.isMax = mediaMaxArredondada >= 3;
+		if (this.af.isMax) this.af.max = 10 - mediaMaxArredondada;
 
 		this.af.mediaMin = (aux + (mediaN2Atual * 3)) / 5;
 
-		this.af.isMin = this.af.mediaMin >= 3;
+		const mediaMinArredondada = Math.round((this.af.mediaMin + Number.EPSILON) * 10) / 10;
+		this.af.isMin = mediaMinArredondada >= 3;
 		if (this.af.isMin) {
-			this.af.min = 10 - this.af.mediaMin;
+			this.af.min = 10 - mediaMinArredondada;
 
 		} else {
 			this.af.precisa = isQuartaProvaSelected
