@@ -252,6 +252,17 @@ describe('CalculadoraComponent', () => {
 			component.calcularNota();
 			expect(component.result?.titulo).toContain('Você precisa de 10 na Quarta prova');
 		});
+
+		it.each([
+			{ terceiraNota: 9.95, response: 'Você precisa de 10 na Quarta prova' },
+			{ terceiraNota: 9.90, response: 'Você já está de AF.' },
+		])('should respect final average rounding for quarta prova $terceiraNota', ({ terceiraNota, response }) => {
+			component.notaForm.patchValue({ primeiraNota: 2.44, segundaNota: 2.44, terceiraNota, quartaNota: 0 });
+
+			component.calcularNota();
+
+			expect(component.result?.titulo).toContain(response);
+		});
 	});
 
 	describe('aplicarPontos', () => {
