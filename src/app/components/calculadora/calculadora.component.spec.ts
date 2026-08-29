@@ -134,7 +134,7 @@ describe('CalculadoraComponent', () => {
 	});
 
 	describe('calcularNota', () => {
-		let spyMediaSimulada: jest.SpyInstance<void, [isQuartaProvaSelected: boolean], any>;
+		let spyMediaSimulada: jest.SpyInstance;
 		let spyIsAFSelected: jest.SpyInstance<boolean>;
 
 		beforeEach(() => {
@@ -262,6 +262,17 @@ describe('CalculadoraComponent', () => {
 			component.calcularNota();
 
 			expect(component.result?.titulo).toContain(response);
+		});
+
+		it('should reapply the N2 menor nota bonus after simulating 10 in quarta prova', () => {
+			component.notaForm.patchValue({ primeiraNota: 0, segundaNota: 0, terceiraNota: 2, quartaNota: 0 });
+			component.pointsArray.setValue([false, true, false, false]);
+
+			component.calcularNota();
+
+			expect(component.state.af.mediaMax).toBe(3.9);
+			expect(component.state.af.max).toBe(6.1);
+			expect(component.result?.detalhe?.[0]).toContain('6.1');
 		});
 	});
 

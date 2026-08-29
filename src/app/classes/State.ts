@@ -70,11 +70,17 @@ export class State {
 		this.calcularMedias();
 	}
 
-	calcularMediaSimulada(isQuartaProvaSelected: boolean) {
+	calcularMediaSimulada(isQuartaProvaSelected: boolean, terceiraNota = this.notas.p3, points: boolean[] = []) {
 		let aux = this.mediaN1 * 2;
 		const mediaN2Atual = (this.notas.p3 + this.notas.p4) / 2;
+		let [p3Simulada, p4Simulada] = [terceiraNota, 10];
+		if (isQuartaProvaSelected) {
+			if (points[1]) [p3Simulada, p4Simulada] = this.aplicarMenor(p3Simulada, p4Simulada);
+			if (points[3]) [p3Simulada, p4Simulada] = this.distribuirMedia(p3Simulada, p4Simulada);
+		}
+		const mediaN2Max = isQuartaProvaSelected ? (p3Simulada + p4Simulada) / 2 : 10;
 		this.af.mediaMax = isQuartaProvaSelected
-			? (aux + (((this.notas.p3 + 10) / 2) * 3)) / 5
+			? (aux + (mediaN2Max * 3)) / 5
 			: (aux + 30) / 5;
 
 		const mediaMaxArredondada = Math.round((this.af.mediaMax + Number.EPSILON) * 10) / 10;

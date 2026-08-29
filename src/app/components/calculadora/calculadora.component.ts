@@ -180,7 +180,7 @@ export class CalculadoraComponent implements OnInit {
 			return;
 
 		} else if (s.nota > 10) {
-			s.calcularMediaSimulada(this.isQuartaProvaSelected);
+			s.calcularMediaSimulada(this.isQuartaProvaSelected, notaForm.terceiraNota as number, this.pointsArray.value);
 			if (this.arredondarNota(s.af.mediaMax)! >= s.media) s.nota = 10;
 		}
 
