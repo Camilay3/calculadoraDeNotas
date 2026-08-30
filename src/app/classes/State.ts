@@ -27,7 +27,7 @@ export class State {
 		this.mediaFinal = null;
 	}
 
-	atribuirNotas(notes: number[]) {
+	atribuirNotas(notes: readonly (number | null)[]): void {
 		this.notas.p1 = notes[0] ?? 0;
 		this.notas.p2 = notes[1] ?? 0;
 		this.notas.p3 = notes[2] ?? 0;
@@ -56,7 +56,7 @@ export class State {
 	ponto = (x: number, qnt: number = 1): number => Math.min(x + qnt, 10);
 	aplicarMenor = (a: number, b: number): [number, number] => (a > b) ? [a, this.ponto(b)] : [this.ponto(a), b];
 
-	aplicarPontos(points: boolean[]) {
+	aplicarPontos(points: readonly (boolean | null)[]): void {
 		const [b1, b2, b3, b4] = points;
 		const n = this.notas;
 
@@ -70,7 +70,7 @@ export class State {
 		this.calcularMedias();
 	}
 
-	calcularMediaSimulada(isQuartaProvaSelected: boolean, terceiraNota = this.notas.p3, points: boolean[] = []) {
+	calcularMediaSimulada(isQuartaProvaSelected: boolean, terceiraNota = this.notas.p3, points: readonly (boolean | null)[] = []): void {
 		let aux = this.mediaN1 * 2;
 		const mediaN2Atual = (this.notas.p3 + this.notas.p4) / 2;
 		let [p3Simulada, p4Simulada] = [terceiraNota, 10];

@@ -1,5 +1,6 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators, FormsModule, FormArray, } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { TuiButton, TuiLabel, TuiTextfield, TuiTitle, TuiError, TuiHint, TuiIcon } from '@taiga-ui/core';
 import { TuiCheckbox, TuiInputNumber, TuiRadio, TuiRadioList, TuiTooltip } from '@taiga-ui/kit';
@@ -17,6 +18,7 @@ import { State } from '../../classes/State';
 	templateUrl: './calculadora.component.html',
 })
 export class CalculadoraComponent implements OnInit {
+	private readonly destroyRef = inject(DestroyRef);
 	state: State = new State();
 	provaLabel: string = 'Quarta prova';
 	result: IResultado | null = null;
@@ -63,14 +65,14 @@ export class CalculadoraComponent implements OnInit {
 
 	ngOnInit() {
 		this.notaForm.controls.notaEsperada.valueChanges
-			.pipe(startWith(this.notaForm.controls.notaEsperada.value))
+			.pipe(startWith(this.notaForm.controls.notaEsperada.value), takeUntilDestroyed(this.destroyRef))
 			.subscribe(v => {
 				this.provaLabel = v?.name ?? 'Quarta prova';
 				this.updateValidators();
 			});
 	}
 
-	get pointsArray() { return this.notaForm.controls.points as FormArray<FormControl<boolean>>; }
+	get pointsArray(): FormArray<FormControl<boolean | null>> { return this.notaForm.controls.points; }
 	get isQuartaProvaSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'Quarta prova'; }
 	get isAFSelected() { return this.notaForm.controls.notaEsperada.value?.name === 'AF'; }
 
@@ -97,11 +99,10 @@ export class CalculadoraComponent implements OnInit {
 	}
 
 	arredondarNota(n: number | null): number | null { return (n == null) ? null : Math.round((n + Number.EPSILON) * 10) / 10; }
-	arredondarCampos(obj: any, chaves: string[]) {
-		chaves.forEach(key => {
-			const valor = obj[key];
-			if (typeof valor === 'number' || valor === null) obj[key] = this.arredondarNota(valor);
-		});
+	arredondarCampos<T extends object, K extends keyof T>(obj: T & Record<K, number | null>, chaves: readonly K[]): void {
+		for (const key of chaves) {
+			obj[key] = this.arredondarNota(obj[key]) as (T & Record<K, number | null>)[K];
+		}
 	}
 
 	@ViewChild('resultadoSection') resultadoSection?: ElementRef;
@@ -157,7 +158,7 @@ export class CalculadoraComponent implements OnInit {
 			notaForm.terceiraNota as number,
 			notaForm.quartaNota as number,
 		]);
-		(this.state.atribuido) ? this.state.aplicarPontos(this.pointsArray.value) : console.error('Erro ao tentar aplicar pontos sem haver notas cadastradas');
+		(s.atribuido) ? s.aplicarPontos(this.pointsArray.value) : console.error('Erro ao tentar aplicar pontos sem haver notas cadastradas');
 
 		if (this.isAFSelected) {
 			s.nota = s.mediaFinal ?? 0;
