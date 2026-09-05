@@ -27,7 +27,7 @@ export class State {
 		this.mediaFinal = null;
 	}
 
-	atribuirNotas(notes: number[]) {
+	atribuirNotas(notes: readonly (number | null)[]): void {
 		this.notas.p1 = notes[0] ?? 0;
 		this.notas.p2 = notes[1] ?? 0;
 		this.notas.p3 = notes[2] ?? 0;
@@ -56,7 +56,7 @@ export class State {
 	ponto = (x: number, qnt: number = 1): number => Math.min(x + qnt, 10);
 	aplicarMenor = (a: number, b: number): [number, number] => (a > b) ? [a, this.ponto(b)] : [this.ponto(a), b];
 
-	aplicarPontos(points: boolean[]) {
+	aplicarPontos(points: readonly (boolean | null)[]): void {
 		const [b1, b2, b3, b4] = points;
 		const n = this.notas;
 
@@ -70,27 +70,34 @@ export class State {
 		this.calcularMedias();
 	}
 
-	calcularMediaSimulada(isQuartaProvaSelected: boolean) {
+	calcularMediaSimulada(isQuartaProvaSelected: boolean, terceiraNota = this.notas.p3, points: readonly (boolean | null)[] = []): void {
 		let aux = this.mediaN1 * 2;
+		const mediaN2Atual = (this.notas.p3 + this.notas.p4) / 2;
+		let [p3Simulada, p4Simulada] = [terceiraNota, 10];
+		if (isQuartaProvaSelected) {
+			if (points[1]) [p3Simulada, p4Simulada] = this.aplicarMenor(p3Simulada, p4Simulada);
+			if (points[3]) [p3Simulada, p4Simulada] = this.distribuirMedia(p3Simulada, p4Simulada);
+		}
+		const mediaN2Max = isQuartaProvaSelected ? (p3Simulada + p4Simulada) / 2 : 10;
 		this.af.mediaMax = isQuartaProvaSelected
-			? (aux + (((this.notas.p3 + 10) / 2) * 3)) / 5
+			? (aux + (mediaN2Max * 3)) / 5
 			: (aux + 30) / 5;
 
-		this.af.isMax = this.af.mediaMax >= 3;
-		if (this.af.isMax) this.af.max = 10 - this.af.mediaMax;
+		const mediaMaxArredondada = Math.round((this.af.mediaMax + Number.EPSILON) * 10) / 10;
+		this.af.isMax = mediaMaxArredondada >= 3;
+		if (this.af.isMax) this.af.max = 10 - mediaMaxArredondada;
 
-		this.af.mediaMin = isQuartaProvaSelected
-			? (aux + ((this.notas.p3 / 2) * 3)) / 5
-			: aux / 5;
+		this.af.mediaMin = (aux + (mediaN2Atual * 3)) / 5;
 
-		this.af.isMin = this.af.mediaMin >= 3;
+		const mediaMinArredondada = Math.round((this.af.mediaMin + Number.EPSILON) * 10) / 10;
+		this.af.isMin = mediaMinArredondada >= 3;
 		if (this.af.isMin) {
-			this.af.min = 10 - this.af.mediaMin;
+			this.af.min = 10 - mediaMinArredondada;
 
 		} else {
 			this.af.precisa = isQuartaProvaSelected
-				? (((15 - aux) / 3) * 2) - this.notas.p3
-				: (15 - aux) / 3;
+				? (((15 - aux) / 3) * 2) - this.notas.p3 - this.notas.p4
+				: ((15 - aux) / 3) - mediaN2Atual;
 		}
 	}
 }

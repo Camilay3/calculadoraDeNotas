@@ -136,7 +136,7 @@ describe('CalculadoraComponent', () => {
 	});
 
 	describe('calcularNota', () => {
-		let spyMediaSimulada: jest.SpyInstance<void, [isQuartaProvaSelected: boolean], any>;
+		let spyMediaSimulada: jest.SpyInstance;
 		let spyIsAFSelected: jest.SpyInstance<boolean>;
 
 		beforeEach(() => {
@@ -165,6 +165,40 @@ describe('CalculadoraComponent', () => {
 				expect(component.state.af.mediaMax).toBeCloseTo((aux + 30) / 5);
 				expect(component.state.af.mediaMin).toBeCloseTo(aux / 5);
 				expect(component.state.af.precisa).toBeCloseTo((15 - aux) / 3);
+			});
+
+			it('should include N2 bonus when simulating AF for N2', () => {
+				jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(false);
+				component.pointsArray.setValue([false, false, false, true]);
+
+				component.calcularNota();
+
+				expect(component.state.af.mediaMin).toBe(0.6);
+				expect(component.state.af.precisa).toBe(4);
+			});
+
+			it('should include N2 bonus when simulating AF for quarta prova', () => {
+				jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(true);
+				component.pointsArray.setValue([false, false, false, true]);
+
+				component.calcularNota();
+
+				expect(component.state.af.mediaMin).toBe(0.6);
+				expect(component.state.af.precisa).toBe(8);
+			});
+
+			it.each([
+				{ nota: 7.4, mediaMin: 3, isMin: true, afMin: 7 },
+				{ nota: 7.3, mediaMin: 2.9, isMin: false, afMin: null },
+			])('should use rounded media when checking AF eligibility', ({ nota, mediaMin, isMin, afMin }) => {
+				jest.spyOn(component, 'isQuartaProvaSelected', 'get').mockReturnValue(true);
+				component.notaForm.patchValue({ primeiraNota: nota, segundaNota: nota, terceiraNota: 0, quartaNota: 0 });
+
+				component.calcularNota();
+
+				expect(component.state.af.mediaMin).toBe(mediaMin);
+				expect(component.state.af.isMin).toBe(isMin);
+				expect(component.state.af.min).toBe(afMin);
 			});
 		});
 
@@ -205,6 +239,42 @@ describe('CalculadoraComponent', () => {
 			component.calcularNota();
 			expect(spyMediaSimulada).not.toHaveBeenCalled();
 			expect(component.state.aprovado).toBeTruthy();
+		});
+
+		it('should keep N2 and quarta prova calculations consistent after rounding', () => {
+			component.notaForm.patchValue({
+				notaEsperada: component.choices[1],
+				primeiraNota: 2.44,
+				segundaNota: 2.44,
+			});
+			component.calcularNota();
+			expect(component.result?.titulo).toContain('Você precisa de 10 na N2');
+
+			component.notaForm.patchValue({ notaEsperada: component.choices[0], terceiraNota: 10 });
+			component.calcularNota();
+			expect(component.result?.titulo).toContain('Você precisa de 10 na Quarta prova');
+		});
+
+		it.each([
+			{ terceiraNota: 9.95, response: 'Você precisa de 10 na Quarta prova' },
+			{ terceiraNota: 9.90, response: 'Você já está de AF.' },
+		])('should respect final average rounding for quarta prova $terceiraNota', ({ terceiraNota, response }) => {
+			component.notaForm.patchValue({ primeiraNota: 2.44, segundaNota: 2.44, terceiraNota, quartaNota: 0 });
+
+			component.calcularNota();
+
+			expect(component.result?.titulo).toContain(response);
+		});
+
+		it('should reapply the N2 menor nota bonus after simulating 10 in quarta prova', () => {
+			component.notaForm.patchValue({ primeiraNota: 0, segundaNota: 0, terceiraNota: 2, quartaNota: 0 });
+			component.pointsArray.setValue([false, true, false, false]);
+
+			component.calcularNota();
+
+			expect(component.state.af.mediaMax).toBe(3.9);
+			expect(component.state.af.max).toBe(6.1);
+			expect(component.result?.detalhe?.[0]).toContain('6.1');
 		});
 	});
 
@@ -331,6 +401,16 @@ describe('CalculadoraComponent', () => {
 				expect(quartaNota.hasError('required')).toBe(false);
 
 				expect(mediaEsperada.value).toEqual(component.medias[0]);
+			});
+
+			it('should clear quarta when switching from AF to quarta prova', () => {
+				component.notaForm.patchValue({
+					notaEsperada: component.choices[2],
+					quartaNota: 10,
+				});
+				component.notaForm.patchValue({ notaEsperada: component.choices[0] });
+
+				expect(component.notaForm.controls.quartaNota.value).toBeNull();
 			});
 		});
 
